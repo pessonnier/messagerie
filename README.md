@@ -4,6 +4,8 @@
 # configuration initiale
 
 # installation
+sur la base d'une rasbian jessie
+
 activation de la caméra
 - `sudo raspi-config`
 - aller dans 5 Interfacing Options
@@ -32,12 +34,12 @@ opencv3 :
 - https://github.com/opencv/opencv_contrib/releases/tag/3.2.0
 
 tas :
- sudo apt-get install youtube-dl mplayer2 fbi
+ `sudo apt-get install youtube-dl mplayer2 fbi`
 
 # spec
 
 # notes
-pendant apt-get upgrade
+pendant `apt-get upgrade`
 ```
 --- /etc/lightdm/lightdm.conf   2016-09-23 05:52:37.980007612 +0200
 +++ /etc/lightdm/lightdm.conf.dpkg-new  2016-10-13 14:03:14.000000000 +0200
