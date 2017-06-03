@@ -34,7 +34,8 @@ opencv3 :
 - https://github.com/opencv/opencv_contrib/releases/tag/3.2.0
 
 tas :
- `sudo apt-get install youtube-dl mplayer2 fbi`
+-`sudo apt-get install youtube-dl mplayer2 fbi`
+-`sudo pip3 install GPIO`
 
 # spec
 
