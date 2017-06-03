@@ -5,26 +5,26 @@
 
 # installation
 activation de la caméra
-- sudo raspi-config
+- `sudo raspi-config`
 - aller dans 5 Interfacing Options
 
 upload youtube voir https://developers.google.com/youtube/v3/guides/uploading_a_video
- - sudo pip3 install --upgrade google-api-python-client
+ - `sudo pip3 install --upgrade google-api-python-client`
  - exemples youtube https://github.com/youtube/api-samples/tree/master/python
  - autre api https://github.com/google/google-api-python-client/tree/master/samples
  - creation d'un identifiant d'application dans la console google
  - creation du fichier client_secrets.json
- - clone des demo d'utilisation de l'api youtube : git clone https://github.com/youtube/api-samples.git
+ - clone des demo d'utilisation de l'api youtube : `git clone https://github.com/youtube/api-samples.git`
 
 picam :
 - https://github.com/iizukanao/picam/blob/master/INSTALL.md
-- apt-get install flex bison automake gperf libtool patch texinfo ncurses-dev help2man
-- sudo apt-get install netcat
+- `apt-get install flex bison automake gperf libtool patch texinfo ncurses-dev help2man`
+- `sudo apt-get install netcat`
 
 client de test :
-- si besoin ouverture de ports sur le client sudo ufw allow proto udp from 192.168.1.0/24 to any port 5678
-- ecoute du client : nc -l 5678 | mplayer - -cache 1024
-- emission : ./picam --alsadev hw:1,0 --tcpout tcp://192.168.1.20:5678
+- si besoin ouverture de ports sur le client `sudo ufw allow proto udp from 192.168.1.0/24 to any port 5678`
+- ecoute du client : `nc -l 5678 | mplayer - -cache 1024`
+- emission : `./picam --alsadev hw:1,0 --tcpout tcp://192.168.1.20:5678`
 
 opencv3 :
 - http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/
