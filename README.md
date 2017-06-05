@@ -37,6 +37,23 @@ tas :
 -`sudo apt-get install youtube-dl mplayer2 fbi`
 -`sudo pip3 install GPIO`
 
+## test ipython
+install initiale
+```
+mkvirtualenv ipython -p python3
+workon ipython
+pip3 install ipython jupyter numpy matplotlib
+jupyter notebook --generate-config
+```
+ajout d'un mot de passe (celui de l'OS)
+```
+jupyter notebook password
+[NotebookPasswordApp] Wrote hashed password to /home/pi/.jupyter/jupyter_notebook_config.json
+```
+ouverture aux clients distants, ajout de `c.NotebookApp.ip = '*'`dans `/home/pi/.jupyter/jupyter_notebook_config.py`
+
+la console est accessible dans le navigateur http://192.168.1.28:8888/
+
 # spec
 
 # notes
