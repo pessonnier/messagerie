@@ -77,8 +77,26 @@ sudo pip3 install keras # inclu Theano
 Successfully installed keras theano pyyaml numpy scipy
 Cleaning up...
 ```
-pas possible d'installer TF avec `sudo pip3 install --upgrade tensorflow`
-si non, il serait possible de choisir entre Theano et Tensorflow
+err, le même sans le su
+```
+...
+Successfully built keras theano pyyaml scipy
+Installing collected packages: scipy, six, theano, pyyaml, keras
+Successfully installed keras-2.0.4 pyyaml-3.12 scipy-0.19.0 six-1.10.0 theano-0.9.0
+```
+
+pas possible d'installer TF avec `sudo pip3 install --upgrade tensorflow` donc utilisation de la doc https://github.com/samjabrahams/tensorflow-on-raspberry-pi/#installing-from-pip
+```
+wget https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v1.1.0/tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
+pip3 install tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
+...
+Successfully built protobuf
+Installing collected packages: six, protobuf, werkzeug, tensorflow
+Successfully installed protobuf-3.3.0 six-1.10.0 tensorflow-1.1.0 werkzeug-0.12.2
+```
+
+choisir entre Theano et Tensorflow
+XXX
 
 
 # spec
