@@ -37,6 +37,21 @@ tas :
 -`sudo apt-get install youtube-dl mplayer2 fbi`
 -`sudo pip3 install GPIO`
 
+reconaissance faciale
+- projet qui encapsule dlib : https://github.com/ageitgey/face_recognition
+- projet dlib : https://github.com/davisking/dlib
+```
+sudo python3 setup.py install
+...
+Extracting dlib-19.4.99-py3.4-linux-armv7l.egg to /usr/local/lib/python3.4/dist-packages
+Adding dlib 19.4.99 to easy-install.pth file
+
+Installed /usr/local/lib/python3.4/dist-packages/dlib-19.4.99-py3.4-linux-armv7l.egg
+Processing dependencies for dlib==19.4.99
+Finished processing dependencies for dlib==19.4.99
+```
+- doc install dlib pour rpi : https://gist.github.com/ageitgey/1ac8dbe8572f3f533df6269dab35df65
+
 ## test ipython
 install initiale
 ```
@@ -54,9 +69,41 @@ ouverture aux clients distants, ajout de `c.NotebookApp.ip = '*'`dans `/home/pi/
 
 la console est accessible dans le navigateur http://192.168.1.28:8888/
 
+## test kera + TF + Theano
+```
+workon cv
+sudo pip3 install keras # inclu Theano
+...
+Successfully installed keras theano pyyaml numpy scipy
+Cleaning up...
+```
+err, le même sans le su
+```
+...
+Successfully built keras theano pyyaml scipy
+Installing collected packages: scipy, six, theano, pyyaml, keras
+Successfully installed keras-2.0.4 pyyaml-3.12 scipy-0.19.0 six-1.10.0 theano-0.9.0
+```
+
+pas possible d'installer TF avec `sudo pip3 install --upgrade tensorflow` donc utilisation de la doc https://github.com/samjabrahams/tensorflow-on-raspberry-pi/#installing-from-pip
+```
+wget https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v1.1.0/tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
+pip3 install tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
+...
+Successfully built protobuf
+Installing collected packages: six, protobuf, werkzeug, tensorflow
+Successfully installed protobuf-3.3.0 six-1.10.0 tensorflow-1.1.0 werkzeug-0.12.2
+```
+
+choisir entre Theano et Tensorflow
+XXX
+
+
 # spec
 
 # notes
+identification github : https://gist.github.com/ageitgey/1ac8dbe8572f3f533df6269dab35df65
+
 pendant `apt-get upgrade`
 ```
 --- /etc/lightdm/lightdm.conf   2016-09-23 05:52:37.980007612 +0200
