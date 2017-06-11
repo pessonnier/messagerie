@@ -6,11 +6,17 @@
 # installation
 sur la base d'une rasbian jessie
 
-activation de la caméra
+### caméra
+activation
 - `sudo raspi-config`
 - aller dans 5 Interfacing Options
+split de la mémoire
+ - tests à 16mo
+ - tests à 64mo
+doc
+ - picamera : http://picamera.readthedocs.io/en/release-1.13/quickstart.html
 
-upload youtube voir https://developers.google.com/youtube/v3/guides/uploading_a_video
+### upload youtube voir https://developers.google.com/youtube/v3/guides/uploading_a_video
  - `sudo pip3 install --upgrade google-api-python-client`
  - exemples youtube https://github.com/youtube/api-samples/tree/master/python
  - autre api https://github.com/google/google-api-python-client/tree/master/samples
@@ -18,7 +24,7 @@ upload youtube voir https://developers.google.com/youtube/v3/guides/uploading_a_
  - creation du fichier client_secrets.json
  - clone des demo d'utilisation de l'api youtube : `git clone https://github.com/youtube/api-samples.git`
 
-picam :
+### picam :
 - source : https://github.com/iizukanao/picam
 - https://github.com/iizukanao/picam/blob/master/INSTALL.md
 - `apt-get install flex bison automake gperf libtool patch texinfo ncurses-dev help2man`
@@ -32,25 +38,19 @@ nc -l 5001 | mplayer -fps 31 -cache 1024 -
 raspivid -t 999999 -o - | nc 192.168.1.20 5001
 ```
 
-ecran :
+### ecran :
 - doc : http://www.waveshare.com/wiki/5inch_HDMI_LCD
-- picamera : http://picamera.readthedocs.io/en/release-1.10/quickstart.html
 
-client de test :
-- si besoin ouverture de ports sur le client `sudo ufw allow proto udp from 192.168.1.0/24 to any port 5678`
-- ecoute du client : `nc -l 5678 | mplayer - -cache 1024`
-- emission : `./picam --alsadev hw:1,0 --tcpout tcp://192.168.1.20:5678`
-
-opencv3 :
+### opencv3 :
 - http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/
 - https://github.com/opencv/opencv/releases/tag/3.2.0
 - https://github.com/opencv/opencv_contrib/releases/tag/3.2.0
 
-tas :
--`sudo apt-get install youtube-dl mplayer2 fbi`
--`sudo pip3 install GPIO`
+### tas :
+- `sudo apt-get install youtube-dl mplayer2 fbi`
+- `sudo pip3 install GPIO`
 
-reconaissance faciale
+### reconaissance faciale
 - projet qui encapsule dlib : https://github.com/ageitgey/face_recognition
 - projet dlib : https://github.com/davisking/dlib
 ```
@@ -116,6 +116,12 @@ vérifier la température du CPU
 ```
 vcgencmd measure_temp
 ```
+
+client de test :
+- si besoin ouverture de ports sur le client `sudo ufw allow proto udp from 192.168.1.0/24 to any port 5678`
+- ecoute du client : `nc -l 5678 | mplayer - -cache 1024`
+- emission : `./picam --alsadev hw:1,0 --tcpout tcp://192.168.1.20:5678`
+
 
 # spec
 
