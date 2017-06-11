@@ -22,6 +22,18 @@ picam :
 - https://github.com/iizukanao/picam/blob/master/INSTALL.md
 - `apt-get install flex bison automake gperf libtool patch texinfo ncurses-dev help2man`
 - `sudo apt-get install netcat`
+- test `raspistill -v -t 9999999`
+- test `raspivid -t 999999 -w 640 -h 480`
+- test en mode text : `mplayer -xy 800`
+- streaming
+```
+nc -l 5001 | mplayer -fps 31 -cache 1024 -
+raspivid -t 999999 -o - | nc 192.168.1.20 5001
+```
+
+ecran :
+- doc : http://www.waveshare.com/wiki/5inch_HDMI_LCD
+- picamera : http://picamera.readthedocs.io/en/release-1.10/quickstart.html
 
 client de test :
 - si besoin ouverture de ports sur le client `sudo ufw allow proto udp from 192.168.1.0/24 to any port 5678`
@@ -159,4 +171,7 @@ pi@pi3:~/prog/mess/api-samples/python $ python upload_video.py --file="/home/pi/
 Uploading file...
 Video id 'ZyEKXv-qrvY' was successfully uploaded.
 ```
+
+# evolution
+- voir Using MJPG-Streamer dans http://www.akeric.com/blog/?p=2437
 
