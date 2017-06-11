@@ -19,6 +19,7 @@ upload youtube voir https://developers.google.com/youtube/v3/guides/uploading_a_
  - clone des demo d'utilisation de l'api youtube : `git clone https://github.com/youtube/api-samples.git`
 
 picam :
+- source : https://github.com/iizukanao/picam
 - https://github.com/iizukanao/picam/blob/master/INSTALL.md
 - `apt-get install flex bison automake gperf libtool patch texinfo ncurses-dev help2man`
 - `sudo apt-get install netcat`
@@ -110,6 +111,11 @@ Successfully installed protobuf-3.3.0 six-1.10.0 tensorflow-1.1.0 werkzeug-0.12.
 choisir entre Theano et Tensorflow
 XXX
 
+# technique
+vérifier la température du CPU
+```
+vcgencmd measure_temp
+```
 
 # spec
 
