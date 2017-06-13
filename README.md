@@ -17,7 +17,11 @@ doc
  - picamera : http://picamera.readthedocs.io/en/release-1.13/quickstart.html
 
 ### upload youtube voir https://developers.google.com/youtube/v3/guides/uploading_a_video
- - `sudo pip3 install --upgrade google-api-python-client`
+ - `sudo pip3 install --upgrade google-api-python-client` ou sans `sudo` dans un virtualenv
+```
+Installing collected packages: httplib2, pyasn1, rsa, pyasn1-modules, oauth2client, uritemplate, google-api-python-client
+Successfully installed google-api-python-client-1.6.2 httplib2-0.10.3 oauth2client-4.1.1 pyasn1-0.2.3 pyasn1-modules-0.0.9 rsa-3.4.2 uritemplate-3.0.0
+```
  - exemples youtube https://github.com/youtube/api-samples/tree/master/python
  - autre api https://github.com/google/google-api-python-client/tree/master/samples
  - creation d'un identifiant d'application dans la console google
@@ -122,6 +126,14 @@ client de test :
 - ecoute du client : `nc -l 5678 | mplayer - -cache 1024`
 - emission : `./picam --alsadev hw:1,0 --tcpout tcp://192.168.1.20:5678`
 
+uploader une video sur la playlist
+```
+from upload import upload
+upload('/home/pi/prog/messagerie/rec/archive/2017-06-07_23-59-19.ts')
+```
+
+créer un client_secrets.json
+XXX à faire
 
 # spec
 
