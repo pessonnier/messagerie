@@ -11,13 +11,16 @@ from apiclient.errors import HttpError
 from apiclient.http import MediaFileUpload
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
-from oauth2client.tools import run_flow
+from oauth2client.tools import run_flow, argparser
 
 httplib2.RETRIES = 1
 
-PLAYLISTID='PLA9Pn-3QZQ4uexuT6Gg_SZjk2IOFeOMjZ'
-OAUTH2FILE='/home/pi/prog/pmessagerie/RW-oauth2.json'
-CLIENT_SECRETS_FILE = "/home/pi/prog/pmessagerie/client_secrets.json"
+# variables à personnaliser pour chaques déploiements
+CONFDIR = '/home/pi/prog/pmessagerie/'
+PLAYLISTID = 'PL19vuSI02yWn7h0wBa8T6FOMwiqwadB97' # salle café privée
+# 'PLA9Pn-3QZQ4uexuT6Gg_SZjk2IOFeOMjZ' zazezy unlisted
+OAUTH2FILE = CONFDIR+'RW_sallecafe.oauth2.json'
+CLIENT_SECRETS_FILE = CONFDIR+'breuille.client_secrets.json'
 
 # Maximum number of times to retry before giving up.
 MAX_RETRIES = 10
@@ -30,7 +33,34 @@ YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 YOUTUBE_SCOPE = "https://www.googleapis.com/auth/youtube"
 
-def get_authenticated_service():
+
+args = argparser.parse_args()
+
+
+def authfiles():
+  clientid = input('client_id : ')
+  clientSecret = input('client secret : ')
+  clientScretFile = """\
+{
+  "web": {
+    "client_id": "\
+""" + clientid + """\",
+    "client_secret": "\
+""" + clientSecret + """\",
+    "redirect_uris": [],
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://accounts.google.com/o/oauth2/token"
+  }
+}
+"""
+  with open(CLIENT_SECRETS_FILE, 'w') as s:
+    s.write(clientScretFile)
+    print('boo')
+  args.noauth_local_webserver=True
+  get_authenticated_service(args)
+
+
+def get_authenticated_service(args):
   flow = flow_from_clientsecrets(
     CLIENT_SECRETS_FILE, 
     scope=YOUTUBE_SCOPE,
@@ -39,7 +69,7 @@ def get_authenticated_service():
   credentials = storage.get()
 
   if credentials is None or credentials.invalid:
-    credentials = run(flow, storage)
+    credentials = run_flow(flow, storage, args)
 
   return build(
     YOUTUBE_API_SERVICE_NAME, 
@@ -121,7 +151,7 @@ def resumable_upload(insert_request):
   return response
 
 def upload(file):
-  youtube = get_authenticated_service()
+  youtube = get_authenticated_service(args)
   response = initialize_upload(youtube,
     file=file,
     title=file.split('/')[-1].split('.')[0],
