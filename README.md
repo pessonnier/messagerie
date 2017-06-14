@@ -199,3 +199,11 @@ Video id 'ZyEKXv-qrvY' was successfully uploaded.
 # evolution
 - voir Using MJPG-Streamer dans http://www.akeric.com/blog/?p=2437
 
+# références
+le logo provient de http://www.i2clipart.com/
+
+le code utilisant l'API youtube est insprié de :
+- https://stackoverflow.com/questions/21228815/adding-youtube-video-to-playlist-using-python
+- https://github.com/youtube/api-samples/blob/master/python/upload_video.py
+
+la reconnaissance de visage provient des exemples https://github.com/ageitgey/face_recognition/tree/master/examples 
