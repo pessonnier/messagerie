@@ -146,6 +146,23 @@ créer un client_secrets.json
 XXX à faire
 
 # spec
+- enregistrer son + video
+- uploader sur une playliste
+- reconnaissance faciale
+- sortie audio
+- 
+- bouton enregistrer
+- activer les servomoteurs
+- jouer la playliste
+- déclancher une action pour un visage préci
+- plaque
+- alimentation
+- bouton eteindre
+- projet pour les actions personnalisées
+- reconnaître un nouveau visage
+- mise à jour
+- personnaliser une action par visage
+
 
 # notes
 identification github : https://gist.github.com/ageitgey/1ac8dbe8572f3f533df6269dab35df65
