@@ -45,6 +45,16 @@ raspivid -t 999999 -o - | nc 192.168.1.20 5001
 ### ecran :
 - doc : http://www.waveshare.com/wiki/5inch_HDMI_LCD
 
+### audio bluetooth
+doc de configuration initiale : http://youness.net/raspberry-pi/bluetooth-headset-raspberry-pi-3-ad2p-only
+
+après redémarage il suffit de démarer le demon audio `pulseaudio --start` et d'apairer avec le bouton BT de l'enceinte
+
+pour lire 
+`paplay -d bluez_sink.30_21_95_5C_A8_A8 /home/pi/prog/pmessagerie/h2g2.ogg/h2g2.ogg`
+pour enregistrer depuis le micro usb :
+`parecord -r -d alsa_input.usb-0c76_USB_Headphone_Set-00-Set.analog-mono -v boo.wav`
+
 ### opencv3 :
 - http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/
 - https://github.com/opencv/opencv/releases/tag/3.2.0
