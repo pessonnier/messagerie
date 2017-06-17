@@ -16,6 +16,9 @@ split de la mémoire
 doc
  - picamera : http://picamera.readthedocs.io/en/release-1.13/quickstart.html
 
+eteindre la led, `disable_camera_led=1` dans `/boot/config.txt`
+
+
 ### upload youtube voir https://developers.google.com/youtube/v3/guides/uploading_a_video
  - `sudo pip3 install --upgrade google-api-python-client` ou sans `sudo` dans un virtualenv
 ```
@@ -161,7 +164,10 @@ XXX
 
 # technique
 https://docs.python.org/3.4/tutorial/introduction.html
-[26 broches](http://deusyss.developpez.com/tutoriels/RaspberryPi/PythonEtLeGpio/images/10000201000002110000012646FC1CA4.png)
+
+![26 broches](http://deusyss.developpez.com/tutoriels/RaspberryPi/PythonEtLeGpio/images/10000201000002110000012646FC1CA4.png)
+![40 broches](http://deusyss.developpez.com/tutoriels/RaspberryPi/PythonEtLeGpio/images/10000201000002B4000001268CC8D3D9.png)
+
 ### T°
 vérifier la température du CPU
 ```
