@@ -44,6 +44,12 @@ raspivid -t 999999 -o - | nc 192.168.1.20 5001
 
 ### ecran :
 - doc : http://www.waveshare.com/wiki/5inch_HDMI_LCD
+sudo apt-get install xserver-xorg-input-evdev
+sudo cp -rf /usr/share/X11/xorg.conf.d/10-evdev.conf /usr/share/X11/xorg.conf.d/45-evdev.conf
+http://www.waveshare.com/w/upload/3/37/Xinput-calibrator_0.7.5-1_armhf.zip
+sudo dpkg -i -B xinput-calibrator_0.7.5-1_armhf.deb 
+xinput-calibrator --device 6
+copie dans /usr/share/X11/xorg.conf.d/99-calibration.conf
 
 ### audio bluetooth
 doc de configuration initiale : http://youness.net/raspberry-pi/bluetooth-headset-raspberry-pi-3-ad2p-only
@@ -54,6 +60,28 @@ pour lire
 `paplay -d bluez_sink.30_21_95_5C_A8_A8 /home/pi/prog/pmessagerie/h2g2.ogg/h2g2.ogg`
 pour enregistrer depuis le micro usb :
 `parecord -r -d alsa_input.usb-0c76_USB_Headphone_Set-00-Set.analog-mono -v boo.wav`
+
+#### ne marche pas
+ajout de `default-sink = bluez_sink.30_21_95_5C_A8_A8` dans `/etc/pulse/client.conf`
+
+création de `/lib/systemd/system/pulseaudio.service` contenant
+```
+[Unit]
+Description=PulseAudio Daemon
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+PrivateTmp=true
+ExecStart=/usr/bin/pulseaudio –system –realtime 
+```
+installation du service `sudo systemctl --system enable pulseaudio.service`
+
+démarage du service `sudo systemctl --system start pulseaudio.service`
+
+comme ça ne marche pas, ajout de `sudo -u pi /usr/bin/pulseaudio --start` dans `/etc/rc.local`
 
 ### opencv3 :
 - http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/
