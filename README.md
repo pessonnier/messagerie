@@ -81,7 +81,13 @@ installation du service `sudo systemctl --system enable pulseaudio.service`
 
 démarage du service `sudo systemctl --system start pulseaudio.service`
 
-comme ça ne marche pas, ajout de `sudo -u pi /usr/bin/pulseaudio --start` dans `/etc/rc.local`
+echec aves l'ajout de `sudo -u pi /usr/bin/pulseaudio --start` dans `/etc/rc.local`, connection ok mais la carte bluez n'est plus vue par `pactl`
+
+#### commandes utiles
+- pulseaudio --start
+- pacmd set-default-sink bluez_sink.30_21_95_5C_A8_A8
+- pactl list cards short
+- bluetoothctl
 
 ### opencv3 :
 - http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/
@@ -154,24 +160,39 @@ choisir entre Theano et Tensorflow
 XXX
 
 # technique
+### T°
 vérifier la température du CPU
 ```
 vcgencmd measure_temp
 ```
 
+### flux video
 client de test :
 - si besoin ouverture de ports sur le client `sudo ufw allow proto udp from 192.168.1.0/24 to any port 5678`
 - ecoute du client : `nc -l 5678 | mplayer - -cache 1024`
 - emission : `./picam --alsadev hw:1,0 --tcpout tcp://192.168.1.20:5678`
 
-uploader une video sur la playlist
+### uploader une video sur la playlist
 ```
 from upload import upload
 upload('/home/pi/prog/messagerie/rec/archive/2017-06-07_23-59-19.ts')
 ```
 
-créer un client_secrets.json
-XXX à faire
+### configurer pour youtube
+- la chaine
+- la playliste
+- ajouter l'API youtube
+- créer un client_secrets.json XXX
+- permettre / configurer auth2
+
+### tester la caméra
+```
+from time import sleep
+from picamera import PiCamera
+camera = PiCamera()
+camera.resolution = (1024, 768)
+camera.start_preview()
+```
 
 # spec
 - enregistrer son + video
