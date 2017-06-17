@@ -160,6 +160,8 @@ choisir entre Theano et Tensorflow
 XXX
 
 # technique
+https://docs.python.org/3.4/tutorial/introduction.html
+[26 broches](http://deusyss.developpez.com/tutoriels/RaspberryPi/PythonEtLeGpio/images/10000201000002110000012646FC1CA4.png)
 ### T°
 vérifier la température du CPU
 ```
