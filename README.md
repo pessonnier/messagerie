@@ -116,52 +116,6 @@ Finished processing dependencies for dlib==19.4.99
 ```
 - doc install dlib pour rpi : https://gist.github.com/ageitgey/1ac8dbe8572f3f533df6269dab35df65
 
-## test ipython
-install initiale
-```
-mkvirtualenv ipython -p python3
-workon ipython
-pip3 install ipython jupyter numpy matplotlib
-jupyter notebook --generate-config
-```
-ajout d'un mot de passe (celui de l'OS)
-```
-jupyter notebook password
-[NotebookPasswordApp] Wrote hashed password to /home/pi/.jupyter/jupyter_notebook_config.json
-```
-ouverture aux clients distants, ajout de `c.NotebookApp.ip = '*'`dans `/home/pi/.jupyter/jupyter_notebook_config.py`
-
-la console est accessible dans le navigateur http://192.168.1.28:8888/
-
-## test kera + TF + Theano
-```
-workon cv
-sudo pip3 install keras # inclu Theano
-...
-Successfully installed keras theano pyyaml numpy scipy
-Cleaning up...
-```
-err, le même sans le su
-```
-...
-Successfully built keras theano pyyaml scipy
-Installing collected packages: scipy, six, theano, pyyaml, keras
-Successfully installed keras-2.0.4 pyyaml-3.12 scipy-0.19.0 six-1.10.0 theano-0.9.0
-```
-
-pas possible d'installer TF avec `sudo pip3 install --upgrade tensorflow` donc utilisation de la doc https://github.com/samjabrahams/tensorflow-on-raspberry-pi/#installing-from-pip
-```
-wget https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v1.1.0/tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
-pip3 install tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
-...
-Successfully built protobuf
-Installing collected packages: six, protobuf, werkzeug, tensorflow
-Successfully installed protobuf-3.3.0 six-1.10.0 tensorflow-1.1.0 werkzeug-0.12.2
-```
-
-choisir entre Theano et Tensorflow
-XXX
-
 # technique
 https://docs.python.org/3.4/tutorial/introduction.html
 
@@ -201,6 +155,10 @@ camera = PiCamera()
 camera.resolution = (1024, 768)
 camera.start_preview()
 ```
+
+### lire une video
+- `sudo SDL_VIDEODRIVER=fbcon SDL_FBDEV=/dev/fb0 mplayer -vo sdl  Videos/aze.mp4`
+- `omxplayer -o hdmi Videos/aze.mp4`
 
 # spec
 - enregistrer son + video
@@ -291,3 +249,49 @@ le code utilisant l'API youtube est insprié de :
 - https://github.com/youtube/api-samples/blob/master/python/upload_video.py
 
 la reconnaissance de visage provient des exemples https://github.com/ageitgey/face_recognition/tree/master/examples 
+
+## test ipython
+install initiale
+```
+mkvirtualenv ipython -p python3
+workon ipython
+pip3 install ipython jupyter numpy matplotlib
+jupyter notebook --generate-config
+```
+ajout d'un mot de passe (celui de l'OS)
+```
+jupyter notebook password
+[NotebookPasswordApp] Wrote hashed password to /home/pi/.jupyter/jupyter_notebook_config.json
+```
+ouverture aux clients distants, ajout de `c.NotebookApp.ip = '*'`dans `/home/pi/.jupyter/jupyter_notebook_config.py`
+
+la console est accessible dans le navigateur http://192.168.1.28:8888/
+
+## test kera + TF + Theano
+```
+workon cv
+sudo pip3 install keras # inclu Theano
+...
+Successfully installed keras theano pyyaml numpy scipy
+Cleaning up...
+```
+err, le même sans le su
+```
+...
+Successfully built keras theano pyyaml scipy
+Installing collected packages: scipy, six, theano, pyyaml, keras
+Successfully installed keras-2.0.4 pyyaml-3.12 scipy-0.19.0 six-1.10.0 theano-0.9.0
+```
+
+pas possible d'installer TF avec `sudo pip3 install --upgrade tensorflow` donc utilisation de la doc https://github.com/samjabrahams/tensorflow-on-raspberry-pi/#installing-from-pip
+```
+wget https://github.com/samjabrahams/tensorflow-on-raspberry-pi/releases/download/v1.1.0/tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
+pip3 install tensorflow-1.1.0-cp34-cp34m-linux_armv7l.whl
+...
+Successfully built protobuf
+Installing collected packages: six, protobuf, werkzeug, tensorflow
+Successfully installed protobuf-3.3.0 six-1.10.0 tensorflow-1.1.0 werkzeug-0.12.2
+```
+
+choisir entre Theano et Tensorflow
+XXX
