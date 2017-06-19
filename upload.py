@@ -165,7 +165,7 @@ def upload(file):
 # a faire
 
 if __name__ == '__main__':
-  youtube = get_authenticated_service()
+  youtube = get_authenticated_service(args)
   response = initialize_upload(youtube,
     file='/home/pi/prog/messagerie/rec/archive/2017-06-08_00-03-27.ts',
     title='t4',
