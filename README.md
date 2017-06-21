@@ -122,6 +122,9 @@ https://docs.python.org/3.4/tutorial/introduction.html
 ![26 broches](http://deusyss.developpez.com/tutoriels/RaspberryPi/PythonEtLeGpio/images/10000201000002110000012646FC1CA4.png)
 ![40 broches](http://deusyss.developpez.com/tutoriels/RaspberryPi/PythonEtLeGpio/images/10000201000002B4000001268CC8D3D9.png)
 
+### console
+la console google developers se trouve `https://console.developers.google.com/apis/dashboard`
+
 ### T°
 vérifier la température du CPU
 ```
@@ -159,6 +162,13 @@ camera.start_preview()
 ### lire une video
 - `sudo SDL_VIDEODRIVER=fbcon SDL_FBDEV=/dev/fb0 mplayer -vo sdl  Videos/aze.mp4`
 - `omxplayer -o hdmi Videos/aze.mp4`
+
+### playlists
+- doc : https://developers.google.com/youtube/v3/docs/playlists/list
+- la première video d'une playliste
+```
+youtube.playlistItems().list(playlistId="XXX", part='snippet,contentDetails').execute()['items'][0]['snippet']['resourceId']['videoId']
+```
 
 # spec
 - enregistrer son + video
