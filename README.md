@@ -74,6 +74,8 @@ pour lire
 `paplay -d bluez_sink.30_21_95_5C_A8_A8 /home/pi/prog/pmessagerie/h2g2.ogg/h2g2.ogg`
 pour enregistrer depuis le micro usb :
 `parecord -r -d alsa_input.usb-0c76_USB_Headphone_Set-00-Set.analog-mono -v boo.wav`
+- pour que pulseaudio diffuse par défaut vers le BT : `pacmd set-default-sink bluez_sink.30_21_95_5C_A8_A8`
+- pour que omxplayer utilise pulseaudio : `omxplayer -o alsa:pulse Videos/aze.mp4`
 
 #### ne marche pas
 ajout de `default-sink = bluez_sink.30_21_95_5C_A8_A8` dans `/etc/pulse/client.conf`
@@ -192,6 +194,7 @@ camera.start_preview()
 ### lire une video
 - `sudo SDL_VIDEODRIVER=fbcon SDL_FBDEV=/dev/fb0 mplayer -vo sdl  Videos/aze.mp4`
 - `omxplayer -o hdmi Videos/aze.mp4`
+- sur une enceinte bluetooth : `omxplayer -o alsa:pulse Videos/aze.mp4`
 
 ### playlists
 - doc : https://developers.google.com/youtube/v3/docs/playlists/list
