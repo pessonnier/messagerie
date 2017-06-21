@@ -1,6 +1,7 @@
 import httplib2
 import os
 import sys
+import conf
 
 from apiclient.discovery import build
 from oauth2client.client import flow_from_clientsecrets
@@ -8,12 +9,10 @@ from oauth2client.file import Storage
 from oauth2client.tools import run_flow, argparser
 
 # variables à personnaliser pour chaques déploiements
-CONFDIR = '/home/pi/prog/pmessagerie/'
-PLAYLISTID = 'PL19vuSI02yWn7h0wBa8T6FOMwiqwadB97' # salle c
-fé privée
-# 'PLA9Pn-3QZQ4uexuT6Gg_SZjk2IOFeOMjZ' zazezy unlisted
-OAUTH2FILE = CONFDIR+'RW_sallecafe.oauth2.json'
-CLIENT_SECRETS_FILE = CONFDIR+'breuille.client_secrets.json
+CONFDIR = conf.CONFDIR 
+PLAYLISTID = conf.PLAYLISTID 
+OAUTH2PATH = conf.OAUTH2PATH
+CLIENT_SECRETS_FILE = conf.CLIENT_SECRETS_FILE
 
 YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
@@ -27,7 +26,7 @@ def get_authenticated_service(args):
     CLIENT_SECRETS_FILE,
     scope=YOUTUBE_SCOPE,
     message='pas identifie avec '+CLIENT_SECRETS_FILE)
-  storage = Storage(OAUTH2FILE)
+  storage = Storage(OAUTH2PATH)
   credentials = storage.get()
 
   if credentials is None or credentials.invalid:
