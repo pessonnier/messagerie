@@ -6,6 +6,17 @@
 # installation
 sur la base d'une rasbian jessie
 
+### variables
+dans .profile :
+```
+export PICAMDIR=~/pmessagerie
+export MESSAGERIEMEDIADIR=~/pmessagerie/media
+export PLAYLISTID="XXX"
+export MESSAGERIECONFDIR=~/pmessagerie
+export MESSAGERIESECRETFILE="MrPlume_secrets.json"
+export OAUTH2FILE="RW.oauth2.json"
+```
+
 ### caméra
 activation
 - `sudo raspi-config`
