@@ -108,9 +108,28 @@ echec aves l'ajout de `sudo -u pi /usr/bin/pulseaudio --start` dans `/etc/rc.loc
 - https://github.com/opencv/opencv/releases/tag/3.2.0
 - https://github.com/opencv/opencv_contrib/releases/tag/3.2.0
 
+### partage samba
+- doc : http://www.framboise314.fr/partager-un-repertoire-sous-jessie-avec-samba/
+- modif de `/etc/samba/smb.conf`
+```
+[SalleCafe]
+comment = La salle café
+path = /home/pi/pmessagerie/media # comme MESSAGERIEMEDIADIR
+writable = yes
+guest ok = yes
+guest only = yes
+create mode = 0777
+directory mode = 0777
+share modes = yes
+```
+- chargement de la conf `sudo systemctl restart smbd.service`
+- accès depuis un autre poste avec `smb://192.XXX/sallecafe`
+
 ### tas :
 - `sudo apt-get install youtube-dl mplayer2 fbi`
 - `sudo pip3 install GPIO`
+- `sudo pip3 install youtube-dl`
+- `sudo apt-get install samba samba-common-bin`
 
 ### reconaissance faciale
 - projet qui encapsule dlib : https://github.com/ageitgey/face_recognition
