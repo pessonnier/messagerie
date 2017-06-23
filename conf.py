@@ -1,6 +1,9 @@
 import os
 
 PICAMDIR = os.environ["PICAMDIR"]
+PICAMSTATE = os.path.join(PICAMDIR, 'state')
+PICAMHOOKS = os.path.join(PICAMDIR, 'hooks')
+
 MEDIADIR = os.environ["MESSAGERIEMEDIADIR"]
 PLAYLISTID = os.environ["PLAYLISTID"]
 CONFDIR = os.environ["MESSAGERIECONFDIR"]
