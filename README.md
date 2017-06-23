@@ -130,8 +130,9 @@ share modes = yes
 ### tas :
 - `sudo apt-get install youtube-dl mplayer2 fbi`
 - `sudo pip3 install GPIO`
-- `sudo pip3 install youtube-dl`
+- `pip3 install youtube-dl`
 - `sudo apt-get install samba samba-common-bin`
+- `pip install requests` voir http://docs.python-requests.org/en/latest/user/quickstart/
 
 ### reconaissance faciale
 - projet qui encapsule dlib : https://github.com/ageitgey/face_recognition
