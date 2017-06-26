@@ -150,7 +150,7 @@ def resumable_upload(insert_request):
       time.sleep(sleep_seconds)
   return response
 
-def upload(file):
+def upload(file, playlist=PLAYLISTID):
   youtube = get_authenticated_service(args)
   response = initialize_upload(youtube,
     file=file,
@@ -159,10 +159,8 @@ def upload(file):
     tags=[],
     diffusion='unlisted',
     category=22)
-  add_video_to_playlist(youtube,response['id'],PLAYLISTID)
-
-# obtenir l'id de la playliste
-# a faire
+  add_video_to_playlist(youtube,response['id'],playlist)
+  return response['id']
 
 if __name__ == '__main__':
   youtube = get_authenticated_service(args)

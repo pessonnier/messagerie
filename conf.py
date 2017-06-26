@@ -5,6 +5,8 @@ PICAMSTATE = os.path.join(PICAMDIR, 'state')
 PICAMHOOKS = os.path.join(PICAMDIR, 'hooks')
 
 MEDIADIR = os.environ["MESSAGERIEMEDIADIR"]
+PHOTOSDIR = os.path.join(MEDIADIR, 'photo')
+
 PLAYLISTID = os.environ["PLAYLISTID"]
 CONFDIR = os.environ["MESSAGERIECONFDIR"]
 SECRETFILE = os.environ["MESSAGERIESECRETFILE"]

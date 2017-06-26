@@ -70,9 +70,10 @@ def pcquit(picam):
   #  picam.stdout.close()
   picam.kill()
 
-camera = pcinit()
 
 def test():
+  camera = pcinit()
+  time.sleep(5)
   camera.close()
   time.sleep(0.5)
   picam,pcmess,fich=pcenr()
