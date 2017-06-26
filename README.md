@@ -127,6 +127,49 @@ share modes = yes
 - chargement de la conf `sudo systemctl restart smbd.service`
 - accès depuis un autre poste avec `smb://192.XXX/sallecafe`
 
+### pygame
+pour peut-être gérer les evenements du touchscreen
+```
+sudo apt-get install python3-pygame`
+sudo apt-get install libsdl-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev 
+sudo apt-get install libsmpeg-dev libportmidi-dev libavformat-dev libswscale-dev
+sudo apt-get install python3-dev python3-numpy
+workon XXX
+pip install pygame
+
+Collecting pygame
+  Using cached pygame-1.9.3.tar.gz
+Building wheels for collected packages: pygame
+  Running setup.py bdist_wheel for pygame ... done
+  Stored in directory: /home/pi/.cache/pip/wheels/3b/24/0d/fef366d21bb01ac20148018a3bb3090193cdd64df596e092e1
+Successfully built pygame
+Installing collected packages: pygame
+Successfully installed pygame-1.9.3
+```
+
+tslib = libts-0.0-0 
+`sudo apt-get install evtest tslib libts-bin`
+
+calibration : `sudo TSLIB_TSDEVICE=/dev/input/event1 ts_calibrate`
+```
+xres = 800, yres = 480
+Took 7 samples...
+Top left : X =  371 Y =  529
+Took 6 samples...
+Top right : X = 3689 Y =  561
+Took 7 samples...
+Bot right : X = 3697 Y = 3483
+Took 7 samples...
+Bot left : X =  391 Y = 3519
+Took 10 samples...
+Center : X = 2055 Y = 2017
+-29.244141 0.211346 -0.001004
+-20.026306 0.000076 0.128534
+Calibration constants: -1916544 13850 -65 -1312444 5 8423 65536 
+```
+
+test : `sudo TSLIB_TSDEVICE=/dev/input/event1 ts_test`
+
 ### tas :
 - `sudo apt-get install youtube-dl mplayer2 fbi`
 - `sudo pip3 install GPIO`
@@ -203,6 +246,34 @@ camera.start_preview()
 ```
 youtube.playlistItems().list(playlistId="XXX", part='snippet,contentDetails').execute()['items'][0]['snippet']['resourceId']['videoId']
 ```
+
+### tester le toucscreen
+#### tentative avec pygame
+ne retourne pas de bonnes coordonnées
+```
+sudo /home/pi/.virtualenvs/cv/bin/python3
+ou
+sudo SDL_MOUSEDRV=TSLIB SDL_MOUSEDEV=/dev/input/event1 TSLIB_TSDEVICE=/dev/input/event1 /home/pi/.virtualenvs/cv/bin/python3
+
+import pygame
+from pygame.locals import *
+import os
+os.putenv('SDL_MOUSEDRV', 'TSLIB')
+os.putenv('TSLIB_TSDEVICE', '/dev/input/event1')
+os.putenv('SDL_MOUSEDEV', '/dev/input/event1')
+os.putenv('SDL_FBDEV', '/dev/fb0')
+pygame.init()
+lcd = pygame.display.set_mode((800, 480))
+#pygame.event.get()
+
+while True:
+  for ev in pygame.event.get():
+    if ev.type is MOUSEBUTTONDOWN:
+      print(ev)
+      print(pygame.mouse.get_pos())
+```
+#### tentative avec evdev
+pip install evdev
 
 # spec
 - enregistrer son + video
