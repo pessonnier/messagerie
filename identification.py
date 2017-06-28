@@ -38,8 +38,8 @@ def rechercheVisage(camera, output, ima, over, visagesCodes):
     ima = np.zeros((240,320,3), dtype=np.uint8)
     for i,(top, right, bottom, left) in enumerate(face_locations):
       #print("A face is located at pixel location Top: {}, Left: {}, Bottom: {}, Right: {}".format(top, left, bottom, right))
-      ima[top, left:right, :]=0xff
-      ima[bottom, left:right, :]=0xff
+      ima[top, left:right, :] = 0xff
+      ima[bottom, left:right, :] = 0xff
       ima[top:bottom, left, :] = 0xff
       ima[top:bottom, right, :] = 0xff
     over.update(ima.tobytes())
@@ -58,6 +58,9 @@ def rechercheVisage(camera, output, ima, over, visagesCodes):
       # dessine un carre vert si un visage est reconu
       if len(imatchs)>0:
         ima[10:30, 10:30, 1] = 200
+        over.update(ima.tobytes())
+      else:
+        ima[10:30, 10:30, 0] = 200
         over.update(ima.tobytes())
       for i in imatchs:
         print('trouvé ' + str(i))
