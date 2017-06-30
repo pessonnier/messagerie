@@ -293,6 +293,8 @@ pip install evdev
 - mise à jour
 - personnaliser une action par visage
 
+## seq
+- faire pivoter en identifiant
 
 # notes
 identification github : https://gist.github.com/ageitgey/1ac8dbe8572f3f533df6269dab35df65
