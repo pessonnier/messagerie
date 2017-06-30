@@ -23,7 +23,7 @@ def enqueue_output(out, queue):
 
 def pcinit():
   camera = picamera.PiCamera()
-  camera.resolution = (320, 240)
+  camera.resolution = (conf.CAMERA_MAX_X, conf.CAMERA_MAX_Y)
   camera.start_preview()
   return camera
 
