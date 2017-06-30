@@ -70,7 +70,7 @@ def init():
   GPIO.setup(VERTICAL_GPIO, GPIO.OUT)
   h = GPIO.PWM(HORIZONTAL_GPIO, 50) 
   v = GPIO.PWM(VERTICAL_GPIO, 50)
-  h.start(10)
+  h.start(5.4) # 1.8 à 9.2
   v.start(5) # 4.6 à 7
   # Bluetooth
   bt.connect()
