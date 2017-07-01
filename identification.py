@@ -4,9 +4,12 @@ import picamera
 import numpy as np
 import conf
 import os
+import pickle
 
 def initCamera():
   print('camera')
+  print(conf.CAMERA_CAPTURE_Y)
+  print(conf.CAMERA_CAPTURE_X)
   camera = picamera.PiCamera()
   camera.resolution = (conf.CAMERA_CAPTURE_X,conf.CAMERA_CAPTURE_Y)
   camera.start_preview()
@@ -15,39 +18,47 @@ def initCamera():
   over = camera.add_overlay(ima.tobytes(), layer=3, alpha=64)
   return camera, output, ima, over
 
-def initReco():
-  print('chargement')
-  #moi=face_recognition.load_image_file('media/matete1.jpg')
-  #karine=face_recognition.load_image_file('media/karine1.jpg')
-  #emoi=face_recognition.face_encodings(moi)[0]
-  #ekarine=face_recognition.face_encodings(karine)[0]
+def initFace():
+  # encode les visages et les sérialises
+  print('encodage')
   visages = [ face_recognition.load_image_file(os.path.join(conf.PHOTOSDIR,f)) for f in os.listdir(conf.PHOTOSDIR) if f.endswith('jpg')]
   visagesCodes = [ face_recognition.face_encodings(v)[0] for v in visages ]
+  visagesCodesDump = open(os.path.join(conf.PHOTOSDIR,'visagesCodes.fre'), 'wb')
+  pickle.dump(visagesCodes, visagesCodesDump)
+
+def initReco():
+  # charge les encodage des photos sérialisés
+  print('chargement')
+  visagesCodesDump = open(os.path.join(conf.PHOTOSDIR,'visagesCodes.fre'), 'rb')
+  visagesCodes = pickle.load(visagesCodesDump)
+  print('return chargement')
   return visagesCodes
 
-def precapture():
+def precapture(cadre = True):
   camera, output, ima, over = initCamera()
   visagesCodes = initReco()
-  face_locations = lambda :
+  def face_locations ():
     camera.capture(output, format="rgb")
     return face_recognition.face_locations(output)
-  face_encodings = lambda loc:
+  def face_encodings (loc):
     return face_recognition.face_encodings(output, loc)
-  face_le = lambda :
+  def face_le ():
     loc = face_locations()
+    if cadre:
+      dessineCadre(over, loc)
     return face_recognition.face_encodings(output, loc), loc
-  compare_faces = lambda face_encodings:
+  def compare_faces (face_encodings):
     matchs = [ False ] * len(visagesCodes)
     for face_encoding in face_encodings:
-      #agrege tous les fichiers identifiés dans matchs
+      #agrege tous les fichiers identifies dans matchs
       matchs = [ matchs[i] | m for i, m in enumerate(face_recognition.compare_faces(visagesCodes, face_encoding)) ]
     imatchs = [ i for i, m in enumerate(matchs) if m]
-    return match, imatch
-  face_lec = lambda :
+    return matchs, imatchs
+  def face_lec ():
     return compare_faces (face_le ()[0])[1]
   return face_lec, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces
 
-def dessineCadre(over):
+def dessineCadre(over, face_locations, carreVert = False):
   #ajout des cadres
   ima = np.zeros((conf.CAMERA_CAPTURE_Y,conf.CAMERA_CAPTURE_X,3), dtype=np.uint8)
   for i,(top, right, bottom, left) in enumerate(face_locations):
@@ -55,7 +66,9 @@ def dessineCadre(over):
     ima[bottom, left:right, :] = 0xff
     ima[top:bottom, left, :] = 0xff
     ima[top:bottom, right, :] = 0xff
-  over.update(ima.tobytes())
+  if carreVert:
+    ima[10:30, 10:30, 1] = 200
+  #over.update(ima.tobytes())
 
 def rechercheVisage(camera, output, ima, over, visagesCodes):
   print('recherche')
@@ -102,9 +115,14 @@ def test():
   rechercheVisage(camera, output, ima, over, visagesCodes) 
 
 def test2():
+  print('id test2')
   f=precapture()
   for i in range(10):
     print(f[0]())
-  
-  
-  
+
+def creeVisageEncode():
+  initFace()
+  print(initReco())
+
+if __name__ == "__main__":
+  test()
