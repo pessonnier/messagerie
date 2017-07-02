@@ -42,14 +42,19 @@ def rechercheHorizontale(h, identifieur):
     posh = i*(HMAX-HMIN)/8+HMIN
     print(posh)
     h.ChangeDutyCycle(posh)
-    time.sleep(1)
+    #time.sleep(1)
+    return identifieur()
   h0 = 0
   for t in range(0,3):
     for i in range(h0,9): # np.arange(1.8, 9.2, 0.4)+0.1: # 0.925
-      mesure()
+      l = mesure() 
+      if l != []:
+        return l
     h0 = 1
     for i in range(7,-1,-1):
-      mesure()
+      l = mesure() 
+      if l != []:
+        return l
   h.ChangeDutyCycle(HINIT)
 
 def test():
@@ -59,5 +64,13 @@ def test():
   for i in range(100):
     print(face_lec())
 
+
+def test2():
+  h, v = init()
+  face_lec, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces = id.precapture()
+  print('boucle reco')
+  for i in range(10):
+    print(rechercheHorizontale(h,face_lec))
+
 if __name__ == "__main__":
-  test()
+  test2()

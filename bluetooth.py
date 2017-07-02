@@ -62,3 +62,6 @@ def connect(id='30:21:95:5C:A8:A8'):
 
 def disconnect(id='30:21:95:5C:A8:A8'):
   sp.call('echo "disconnect ' + id + '\nexit\n" | /usr/bin/bluetoothctl', shell = True)
+
+if __name__ == '__main__':
+  connect()
