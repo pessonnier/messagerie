@@ -6,6 +6,7 @@ PICAMHOOKS = os.path.join(PICAMDIR, 'hooks')
 
 MEDIADIR = os.environ["MESSAGERIEMEDIADIR"]
 PHOTOSDIR = os.path.join(MEDIADIR, 'photo')
+ACTIONDIR = os.path.join(MEDIADIR, 'actions')
 
 PLAYLISTID = os.environ["PLAYLISTID"]
 CONFDIR = os.environ["MESSAGERIECONFDIR"]
