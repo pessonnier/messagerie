@@ -57,6 +57,8 @@ def pcstart(picammess):
         break
     except Empty:
       print('attente enr')
+  if fich == '':
+    print('échec de l\'enregistrement') # log
   return fich
 
 def pcenr():
