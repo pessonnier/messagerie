@@ -47,15 +47,16 @@ def precapture(cadre = True):
     if cadre:
       dessineCadre(over, loc)
     return face_recognition.face_encodings(output, loc), loc
-  def compare_faces (face_encodings):
+  def compare_faces (face_encodings, loc):
     matchs = [ False ] * len(visagesCodes)
     for face_encoding in face_encodings:
       #agrege tous les fichiers identifies dans matchs
       matchs = [ matchs[i] | m for i, m in enumerate(face_recognition.compare_faces(visagesCodes, face_encoding)) ]
-    imatchs = [ i for i, m in enumerate(matchs) if m]
-    return matchs, imatchs
+    imatchs = [ i, loc[i] for i, m in enumerate(matchs) if m]
+    return matchs, imatchs # imatch contient des couples identifiant visualisé / position
   def face_lec ():
-    return compare_faces (face_le ()[0])[1]
+    face_encodings, loc = face_le ()
+    return compare_faces (face_encodings, loc)[1] # ne retourne que le imatch
   return face_lec, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces
 
 def dessineCadre(over, face_locations, carreVert = False):
