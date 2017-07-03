@@ -48,12 +48,12 @@ def precapture(cadre = True):
       dessineCadre(over, loc)
     return face_recognition.face_encodings(output, loc), loc
   def compare_faces (face_encodings, loc):
-    matchs = [ False ] * len(visagesCodes)
-    for face_encoding in face_encodings:
+    xmatchs = [ (False, (0,0,0,0)) ] * len(visagesCodes)
+    for locnum, face_encoding in enumerate(face_encodings):
       #agrege tous les fichiers identifies dans matchs
-      matchs = [ matchs[i] | m for i, m in enumerate(face_recognition.compare_faces(visagesCodes, face_encoding)) ]
-    imatchs = [ i, loc[i] for i, m in enumerate(matchs) if m]
-    return matchs, imatchs # imatch contient des couples identifiant visualisé / position
+      xmatchs = [ (xmatchs[i][0] | m, loc[locnum]) for i, m in enumerate(face_recognition.compare_faces(visagesCodes, face_encoding)) ]
+    imatchs = [ (i, loc) for i, (m, loc) in enumerate(xmatchs) if m]
+    return xmatchs, imatchs # imatch contient des couples identifiant visualisé / position
   def face_lec ():
     face_encodings, loc = face_le ()
     return compare_faces (face_encodings, loc)[1] # ne retourne que le imatch
@@ -69,7 +69,7 @@ def dessineCadre(over, face_locations, carreVert = False):
     ima[top:bottom, right, :] = 0xff
   if carreVert:
     ima[10:30, 10:30, 1] = 200
-  #over.update(ima.tobytes())
+  #over.update(ima.tobytes()) # XXX
 
 def rechercheVisage(camera, output, ima, over, visagesCodes):
   print('recherche')

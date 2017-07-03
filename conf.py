@@ -39,3 +39,6 @@ def test():
   print(IDENTIFICATION_CAMERA_RATIO)
   print(CAMERA_CAPTURE_X)
   print(CAMERA_CAPTURE_Y)
+
+if __name__ == '__main__':
+  test()

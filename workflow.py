@@ -1,10 +1,12 @@
 import time
 import subprocess as sp
+import RPi.GPIO as GPIO
+import os
 
 import identification as id
 import pied
 import upload
-import play
+#import play
 import bluetooth as bt
 import enregistrement as enr
 import conf
@@ -15,6 +17,7 @@ VEILLE = 9
 ECOUTE = 2
 RECHERCHE = 3
 CENTRER = 4
+AUTORISE = 10
 ENREGISTREMENT = 5
 UPLOAD = 6
 PLAY = 7
@@ -39,20 +42,20 @@ def attente(trs, process = None):
   while ev == []:
     ev=[]
     time.sleep(0.05)
-    bttrouge = GPIO.input(BTTROUGE_GPIO)
+    bttrouge = GPIO.input(pied.BTTROUGE_GPIO)
     if (bttrouge == 0) and (BTTROUGE in trs):
       ev.append(BTTROUGE)
     if (bttrouge == 1) and (BTTROUGE_OFF in trs):
       ev.append(BTTROUGE_OFF)
-    bttvert = GPIO.input(BTTVERT_GPIO)
+    bttvert = GPIO.input(pied.BTTVERT_GPIO)
     if (bttvert == 0) and (BTTVERT in trs):
       ev.append(BTTVERT)
     if (bttvert == 1) and (BTTVERT_OFF in trs):
       ev.append(BTTVERT_OFF)
-    mouvement = GPIO.input(MOUVEMENT_GPIO)
-    if (mouvement == 0) and (MOUVEMENT in trs):
+    mouvement = GPIO.input(pied.MOUVEMENT_GPIO)
+    if (mouvement == 1) and (MOUVEMENT in trs):
       ev.append(MOUVEMENT)
-    if (mouvement == 1) and (MOUVEMENT_OFF in trs):
+    if (mouvement == 0) and (MOUVEMENT_OFF in trs):
       ev.append(MOUVEMENT_OFF)
     if (PROCESSTERMINATED in trs) and (process is not None) and (process.poll is not None):
       ev.append(PROCESSTERMINATED)
@@ -61,8 +64,9 @@ def attente(trs, process = None):
 # XXX à charger depuis un fichier de conf
 actions = {0 : "caid.sh", 1 : "rien.sh", 2 : "default.sh", 3 : "rien.sh"}
 def lancescript(idt):
-  commande = action[idt]
-  p=sp.Popen([os.path.join(ACTIONDIR, commande)])
+  commande = actions[idt]
+  print ('commande ' + os.path.join(conf.ACTIONDIR, commande))
+  p=sp.Popen(["/bin/bash", os.path.join(conf.ACTIONDIR, commande)])
   return p
   
 # les états
@@ -73,10 +77,13 @@ def init():
   # Bluetooth
   bt.connect()
   # passage à l'étape suivante
+  global etat
   etat=ECOUTE
 
 def veille():
   print('veille')
+  bt.deconnect()
+  global etat
   etat = INIT
   
 def ecoute():
@@ -84,14 +91,16 @@ def ecoute():
   r = []
   while r == []:
     r=attente([MOUVEMENT])
+  global etat
   etat = RECHERCHE
 
 def rechercheVisage():
   print('recherche')
+  global etat
   h, v = pied.init()
   face_lec, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces = id.precapture()
   for i in range(4):
-    imatch = rechercheHorizontale(h,face_lec) 
+    imatch = pied.rechercheHorizontale(h,face_lec) 
     if imatch != []:
       for identifiant, loc in imatch:
         lancescript(identifiant)
@@ -103,15 +112,14 @@ def rechercheVisage():
 def centrer(loc):
   print('centrer')
   pied.centrer(loc)
-  etat = IDENTIFIER
-
-def identifier():
-  print('identifier')
+  global etat
   etat = AUTORISE
 
 # les actions possible une fois identifié
 def autorise():
-  print('identifier')
+  print('autorise')
+  print('choix PLAY ENR')
+  global etat
   r = []
   while r == []:
     r = attente([BTTROUGE,BTTVERT])
@@ -125,6 +133,7 @@ def commandePlayVideo(video):
 
 def play():
   print('play')
+  global etat
   # la playliste est constituée des fichiers du répertoire MEDIADIR qui ne sont pas des miniatures
   playliste = [ f for f in os.listdir(conf.MEDIADIR) if (not f.endswith('jpg')) and (os.path.isfile(os.path.join(conf.MEDIADIR, f))) ]
   print(playliste)
@@ -150,6 +159,7 @@ def play():
 
 def enregistrement():
   print('enregistrement')
+  global etat
   # XXX camera.close()
   picam, pcmess, fich = enr.pcenr()
   r = []
@@ -182,7 +192,6 @@ def eteindre():
 #  ECOUTE : ecoute,
 #  RECHERCHE : rechercheVisage, # comment récupérer le résultat ?
 #  CENTRER : centrer, # comment faire pour lui passer un paramètre ?
-#  IDENTIFIER : identifier,
 #  AUTORISE : autorise,
 #  ENREGISTREMENT : enregistrement,
 #  UPLOAD : upload,
@@ -190,6 +199,7 @@ def eteindre():
 #  ETEINDRE : eteindre }
 
 def work():
+  global etat # util ?
   while True:
     print('etat : ' + str(etat))
     if etat == INIT:
@@ -202,8 +212,6 @@ def work():
       imatch = rechercheVisage()
     elif etat == CENTRER:
       centrer(imatch[0][1]) # la localisation du premier visage
-    elif etat == IDENTIFIER:
-      identifier()
     elif etat == AUTORISE:
       autorise()
     elif etat == ENREGISTREMENT:
@@ -218,4 +226,5 @@ def work():
 def main():
   work()
 
-main()
+if __name__ == '__main__':
+  main()
