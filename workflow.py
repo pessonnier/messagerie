@@ -1,36 +1,40 @@
 import time
-import subprocess
+import subprocess as sp
 
 import identification as id
 import pied
 import upload
 import play
 import bluetooth as bt
+import enregistrement as enr
 import conf
 
 # les états
-INIT=1
-ECOUTE=2
-RECHERCHE=3
-CENTRER=4
-ENREGISTREMENT=5
-UPLOAD=6
-PLAY=7
-ETEINDRE=8
+INIT = 1
+VEILLE = 9
+ECOUTE = 2
+RECHERCHE = 3
+CENTRER = 4
+ENREGISTREMENT = 5
+UPLOAD = 6
+PLAY = 7
+ETEINDRE = 8
 
 etat = INIT
 
 # les transitions
-BTTROUGE=1
-BTTROUGE_OFF=101
-BTTVERT=2
-BTTVERT_OFF=102
-MOUVEMENT=3
-MOUVEMENT_OFF=103
-TOUCH=4
-TOUCH_OFF=104
+BTTROUGE = 1
+BTTROUGE_OFF = 101
+BTTVERT = 2
+BTTVERT_OFF = 102
+MOUVEMENT = 3
+MOUVEMENT_OFF = 103
+TOUCH = 4
+TOUCH_OFF = 104
+PROCESSTERMINATED = 5
 
-def attente(trs):
+# fonctions communes
+def attente(trs, process = None):
   ev=[]
   while ev == []:
     ev=[]
@@ -50,8 +54,18 @@ def attente(trs):
       ev.append(MOUVEMENT)
     if (mouvement == 1) and (MOUVEMENT_OFF in trs):
       ev.append(MOUVEMENT_OFF)
+    if (PROCESSTERMINATED in trs) and (process is not None) and (process.poll is not None):
+      ev.append(PROCESSTERMINATED)
   return ev
 
+# XXX à charger depuis un fichier de conf
+actions = {0 : "caid.sh", 1 : "rien.sh", 2 : "default.sh", 3 : "rien.sh"}
+def lancescript(idt):
+  commande = action[idt]
+  p=sp.Popen([os.path.join(ACTIONDIR, commande)])
+  return p
+  
+# les états
 def init():
   print('init')
   # les périfériques
@@ -61,6 +75,10 @@ def init():
   # passage à l'étape suivante
   etat=ECOUTE
 
+def veille():
+  print('veille')
+  etat = INIT
+  
 def ecoute():
   print('écoute')
   r = []
@@ -70,10 +88,21 @@ def ecoute():
 
 def rechercheVisage():
   print('recherche')
-  etat = CENTRER
+  h, v = pied.init()
+  face_lec, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces = id.precapture()
+  for i in range(4):
+    imatch = rechercheHorizontale(h,face_lec) 
+    if imatch != []:
+      for identifiant, loc in imatch:
+        lancescript(identifiant)
+      etat = CENTRER
+      return imatch
+  etat = VEILLE
+  return []
 
-def centrer():
+def centrer(loc):
   print('centrer')
+  pied.centrer(loc)
   etat = IDENTIFIER
 
 def identifier():
@@ -85,23 +114,94 @@ def autorise():
   print('identifier')
   r = []
   while r == []:
-    r=attente([BTTROUGE,BTTVERT])
+    r = attente([BTTROUGE,BTTVERT])
   if r[0] == BTTROUGE:
     etat = PLAY
   if r[0] == BTTVERT:
     etat = ENREGISTREMENT
+
+def commandePlayVideo(video):
+  return [ 'omxplayer', '-o', 'alsa:pulse', os.path.join(conf.MEDIADIR, video)]
+
+def play():
+  print('play')
+  # la playliste est constituée des fichiers du répertoire MEDIADIR qui ne sont pas des miniatures
+  playliste = [ f for f in os.listdir(conf.MEDIADIR) if (not f.endswith('jpg')) and (os.path.isfile(os.path.join(conf.MEDIADIR, f))) ]
+  print(playliste)
+  pos = 0
+  while pos < len(playliste):
+    video = playliste[pos]
+    p = sp.Popen(commandePlayVideo(video))
+    r = []
+    while r == []:
+      r = attente([BTTROUGE, BTTVERT, PROCESSTERMINATED], process = p)
+    if (BTTROUGE in r) and (BTTVERT in r):
+      etat = VEILLE
+      return
+    if r[0] == BTTVERT: # video suivante
+      p.kill()
+      pos += 1
+    if r[0] == BTTROUGE: # video précédente
+      p.kill()
+      pos -= 1
+    if r[0] == PROCESSTERMINATED:
+      pos += 1
+  etat = VEILLE
+
+def enregistrement():
+  print('enregistrement')
+  # XXX camera.close()
+  picam, pcmess, fich = enr.pcenr()
+  r = []
+  while r == []:
+    r = attente([BTTVERT_OFF])
+  enr.pcstop()
+  enr.pcquit(picam)
+  print('fichier enregistré : '+fich)
+  
+  # étape upload
+  idvideo = upload.upload(fich)
+  print('vidéo uploadée id : ' + idvideo)
+  
+  # aprés enregistrment
+  r = []
+  while r == []:
+    r = attente([BTTROUGE,BTTVERT])
+  if r[0] == BTTROUGE:
+    etat = VEILLE
+  if r[0] == BTTVERT:
+    etat = ENREGISTREMENT
+
+# XXX afaire
+def eteindre():
+  pass
+
+#etats = {
+#  INIT : init,
+#  VEILLE : veille,
+#  ECOUTE : ecoute,
+#  RECHERCHE : rechercheVisage, # comment récupérer le résultat ?
+#  CENTRER : centrer, # comment faire pour lui passer un paramètre ?
+#  IDENTIFIER : identifier,
+#  AUTORISE : autorise,
+#  ENREGISTREMENT : enregistrement,
+#  UPLOAD : upload,
+#  PLAY : play,
+#  ETEINDRE : eteindre }
 
 def work():
   while True:
     print('etat : ' + str(etat))
     if etat == INIT:
       init()
+    elif etat == VEILLE:
+      veille()
     elif etat == ECOUTE:
       ecoute()
     elif etat == RECHERCHE:
-      rechercheVisage()
+      imatch = rechercheVisage()
     elif etat == CENTRER:
-      centrer()
+      centrer(imatch[0][1]) # la localisation du premier visage
     elif etat == IDENTIFIER:
       identifier()
     elif etat == AUTORISE:
@@ -112,7 +212,7 @@ def work():
       upload()
     elif etat == PLAY:
       play()
-    elif etat == ETEINDRE:
+    elif etat == ETEINDRE: # XXX transition à trouver
       eteindre()
 
 def main():
