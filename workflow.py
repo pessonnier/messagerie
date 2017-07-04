@@ -6,7 +6,6 @@ import os
 import identification as id
 import pied
 import upload
-#import play
 import bluetooth as bt
 import enregistrement as enr
 import conf
@@ -57,7 +56,7 @@ def attente(trs, process = None):
       ev.append(MOUVEMENT)
     if (mouvement == 0) and (MOUVEMENT_OFF in trs):
       ev.append(MOUVEMENT_OFF)
-    if (PROCESSTERMINATED in trs) and (process is not None) and (process.poll is not None):
+    if (PROCESSTERMINATED in trs) and (process is not None) and (process.poll() is not None):
       ev.append(PROCESSTERMINATED)
   return ev
 
@@ -76,6 +75,7 @@ def init():
   pied.init()
   # Bluetooth
   bt.connect()
+  bt.default()
   # passage à l'étape suivante
   global etat
   etat=ECOUTE
@@ -83,6 +83,7 @@ def init():
 def veille():
   print('veille')
   bt.deconnect()
+  pied.arretmoteur()
   global etat
   etat = INIT
   
@@ -94,16 +95,20 @@ def ecoute():
   global etat
   etat = RECHERCHE
 
+camera = None
+processEnFond = None
+
 def rechercheVisage():
   print('recherche')
-  global etat
+  global etat, camera, processEnFond
   h, v = pied.init()
   face_lec, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces = id.precapture()
   for i in range(4):
     imatch = pied.rechercheHorizontale(h,face_lec) 
     if imatch != []:
+      camera.stop_preview()
       for identifiant, loc in imatch:
-        lancescript(identifiant)
+        processEnFond = lancescript(identifiant)
       etat = CENTRER
       return imatch
   etat = VEILLE
@@ -123,6 +128,8 @@ def autorise():
   r = []
   while r == []:
     r = attente([BTTROUGE,BTTVERT])
+  processEnFond.kill()
+  camera.close()
   if r[0] == BTTROUGE:
     etat = PLAY
   if r[0] == BTTVERT:
@@ -143,6 +150,10 @@ def play():
     p = sp.Popen(commandePlayVideo(video))
     r = []
     while r == []:
+      print('lachez ce boutton rouge')
+      r = attente([BTTROUGE_OFF])
+    r = []
+    while r == []:
       r = attente([BTTROUGE, BTTVERT, PROCESSTERMINATED], process = p)
     if (BTTROUGE in r) and (BTTVERT in r):
       etat = VEILLE
@@ -160,7 +171,7 @@ def play():
 def enregistrement():
   print('enregistrement')
   global etat
-  # XXX camera.close()
+  camera.close()
   picam, pcmess, fich = enr.pcenr()
   r = []
   while r == []:

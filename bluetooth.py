@@ -60,8 +60,17 @@ def disconnect_bug(id='30:21:95:5C:A8:A8'):
 def connect(id='30:21:95:5C:A8:A8'):
   sp.call('echo "connect ' + id + '\nexit\n" | /usr/bin/bluetoothctl', shell = True)
 
+def connect2(id='30:21:95:5C:A8:A8'):
+  p = sp.Popen(['echo "connect ' + id + '\nexit\n" | /usr/bin/bluetoothctl'], shell = True)
+  while p.pull() is None:
+    time.sleep(0.1)
+
 def disconnect(id='30:21:95:5C:A8:A8'):
   sp.call('echo "disconnect ' + id + '\nexit\n" | /usr/bin/bluetoothctl', shell = True)
 
+def default(id='bluez_sink.30_21_95_5C_A8_A8'):
+  sp.call('pacmd set-default-sink '+id, shell = True)
+
 if __name__ == '__main__':
   connect()
+  default()

@@ -32,6 +32,10 @@ def init():
   v.start(VINIT) # 4.6 à 7
   return h, v
 
+def arretmoteur():
+  h.stop()
+  v.stop()
+
 def centrer(location):
   pass
   
