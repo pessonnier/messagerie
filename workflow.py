@@ -61,7 +61,8 @@ def attente(trs, process = None):
   return ev
 
 # XXX à charger depuis un fichier de conf
-actions = {0 : "caid.sh", 1 : "rien.sh", 2 : "default.sh", 3 : "rien.sh"}
+# XXX ajouter rien.sh
+actions = {0 : "caid.sh", 1 : "rien.sh", 2 : "caid.sh", 3 : "rien.sh"}
 def lancescript(idt):
   commande = actions[idt]
   print ('commande ' + os.path.join(conf.ACTIONDIR, commande))
@@ -74,8 +75,7 @@ def init():
   # les périfériques
   pied.init()
   # Bluetooth
-  bt.connect()
-  bt.default()
+  bt.connectDefault()
   # passage à l'étape suivante
   global etat
   etat=ECOUTE
@@ -84,8 +84,24 @@ def veille():
   print('veille')
   bt.deconnect()
   pied.arretmoteur()
+  r = []
+  while r == []:
+    print('lachez ce boutton rouge')
+    r = attente([BTTROUGE_OFF])
+  r = []
+  while r == []:
+    print('lachez ce boutton vert')
+    r = attente([BTTVERT_OFF])
+  r = []
+  while r == []:
+    r = attente([BTTVERT, BTTROUGE])
   global etat
-  etat = INIT
+  if r[0] == BTTVERT:
+    # XXX indiquer que la detection commencera dans 10s
+    time.sleep(10)
+    etat = INIT
+  if r[0] == BTTROUGE:
+    etat = ETEINDRE
   
 def ecoute():
   print('écoute')
@@ -141,8 +157,11 @@ def commandePlayVideo(video):
 def play():
   print('play')
   global etat
+  # bt.connectDefault()
+  def pardate (x, y):
+    return os.stat(os.path.join(conf.MEDIADIR, x)).st_ctime < os.stat(os.path.join(conf.MEDIADIR, y)).st_ctime
   # la playliste est constituée des fichiers du répertoire MEDIADIR qui ne sont pas des miniatures
-  playliste = [ f for f in os.listdir(conf.MEDIADIR) if (not f.endswith('jpg')) and (os.path.isfile(os.path.join(conf.MEDIADIR, f))) ]
+  playliste = [ f for f in os.listdir(conf.MEDIADIR).sort(pardate) if (not f.endswith('jpg')) and (os.path.isfile(os.path.join(conf.MEDIADIR, f))) ]
   print(playliste)
   pos = 0
   while pos < len(playliste):
@@ -152,6 +171,10 @@ def play():
     while r == []:
       print('lachez ce boutton rouge')
       r = attente([BTTROUGE_OFF])
+    r = []
+    while r == []:
+      print('lachez ce boutton vert')
+      r = attente([BTTVERT_OFF])
     r = []
     while r == []:
       r = attente([BTTROUGE, BTTVERT, PROCESSTERMINATED], process = p)
@@ -193,9 +216,8 @@ def enregistrement():
   if r[0] == BTTVERT:
     etat = ENREGISTREMENT
 
-# XXX afaire
 def eteindre():
-  pass
+  sp.call('sudo shutdown', shell = True)
 
 #etats = {
 #  INIT : init,
