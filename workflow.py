@@ -217,7 +217,7 @@ def enregistrement():
     etat = ENREGISTREMENT
 
 def eteindre():
-  sp.call('sudo shutdown', shell = True)
+  sp.call('sudo halt', shell = True)
 
 #etats = {
 #  INIT : init,
@@ -253,7 +253,7 @@ def work():
       upload()
     elif etat == PLAY:
       play()
-    elif etat == ETEINDRE: # XXX transition à trouver
+    elif etat == ETEINDRE:
       eteindre()
 
 def main():
