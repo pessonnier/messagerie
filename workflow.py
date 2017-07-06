@@ -68,7 +68,50 @@ def lancescript(idt):
   print ('commande ' + os.path.join(conf.ACTIONDIR, commande))
   p=sp.Popen(["/bin/bash", os.path.join(conf.ACTIONDIR, commande)])
   return p
-  
+
+def fichierRecent():
+  return playlisteParDate()[0]
+
+def memoriserFichier(fich):
+  with open(os.path.join(conf.CONFDIR, 'dernierevideo.dmp'), 'wb') as f:
+    pickle.dump(f, fich)
+
+def memoriserFichierRecent():
+  fich = fichierRecent()
+  memoriserFichier(fich)
+
+# XXX utiliser 
+def nouveauFichier():
+  memo = pickle.load(os.path.join(conf.CONFDIR, 'dernierevideo.dmp'))
+  dernier = fichierRecent()
+  return memo != dernier
+
+def chargerVideosVues():
+  try:
+    return pickle.load(os.path.join(conf.CONFDIR, 'videosVues.dmp'))
+  except :
+    print ('nouveau fichier de videos vues')
+    return {}
+
+def sauverVideosVues(videosVues):
+  with open(os.path.join(conf.CONFDIR, 'videosVues.dmp'), 'wb') as f:
+    pickle.dump(f, fich)
+
+def fusionnerVideosVues(vues, liste):
+  for l in liste:
+    if vues.get(l, 'yapas') == 'yapas':
+      vues[l]=False
+  return vues
+
+# XXX utiliser
+def afficherVideosVues(videosVues):
+  for f, t in videosVues: # XXX a corriger, comment parcourrir un dict
+    if t:
+      etoile = '*'
+    else:
+      etoile = '-'
+    print (substr(f, 0, 20).rpad(' ', 20)+etoile)
+
 # les états
 def init():
   print('init')
@@ -102,7 +145,8 @@ def veille():
     etat = INIT
   if r[0] == BTTROUGE:
     etat = ETEINDRE
-  
+
+# XXX signaler qu'un message est en attente
 def ecoute():
   print('écoute')
   r = []
@@ -119,15 +163,19 @@ def rechercheVisage():
   global etat, camera, processEnFond
   h, v = pied.init()
   face_lec, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces = id.precapture()
-  for i in range(4):
-    imatch = pied.rechercheHorizontale(h,face_lec) 
-    if imatch != []:
-      camera.stop_preview()
-      for identifiant, loc in imatch:
-        processEnFond = lancescript(identifiant)
-      etat = CENTRER
-      return imatch
-  etat = VEILLE
+  def arretDetection(): # le btt rouge interromp la recherche et passe en lecture
+    return attente([BTTROUGE]) != []
+  imatch = pied.rechercheHorizontale(h, face_lec, arretDetection)
+  if imatch != []:
+    camera.stop_preview()
+    for identifiant, loc in imatch:
+      processEnFond = lancescript(identifiant)
+    etat = CENTRER
+    return imatch
+  elif arretDetection():
+    etat = PLAY
+  else:
+    etat = VEILLE
   return []
 
 def centrer(loc):
@@ -140,13 +188,13 @@ def centrer(loc):
 def autorise():
   print('autorise')
   print('choix PLAY ENR')
-  global etat, processEnFond
+  global etat, processEnFond, camera
+  camera.close() # arret de la caméra pour la reconnaissance faciale
   r = []
   while r == []:
     r = attente([BTTROUGE,BTTVERT])
   # XXX l'action personnalisée n'est pas tuée
   processEnFond.kill()
-  camera.close()
   if r[0] == BTTROUGE:
     etat = PLAY
   if r[0] == BTTVERT:
@@ -155,14 +203,20 @@ def autorise():
 def commandePlayVideo(video):
   return [ 'omxplayer', '-o', 'alsa:pulse', os.path.join(conf.MEDIADIR, video)]
 
+def playlisteParDate()
+  def pardate (x, y):
+    return os.stat(os.path.join(conf.MEDIADIR, x)).st_ctime < os.stat(os.path.join(conf.MEDIADIR, y)).st_ctime
+  # la playliste est constituée des fichiers du répertoire MEDIADIR qui ne sont pas des miniatures
+  return [ f for f in os.listdir(conf.MEDIADIR).sort(pardate) if (not f.endswith('jpg')) and (os.path.isfile(os.path.join(conf.MEDIADIR, f))) ]
+
+# XXX memoriser tous les fichiers lu
 def play():
   print('play')
   global etat
   # bt.connectDefault()
-  def pardate (x, y):
-    return os.stat(os.path.join(conf.MEDIADIR, x)).st_ctime < os.stat(os.path.join(conf.MEDIADIR, y)).st_ctime
-  # la playliste est constituée des fichiers du répertoire MEDIADIR qui ne sont pas des miniatures
-  playliste = [ f for f in os.listdir(conf.MEDIADIR).sort(pardate) if (not f.endswith('jpg')) and (os.path.isfile(os.path.join(conf.MEDIADIR, f))) ]
+  playliste = playlisteParDate()
+  memoriserFichier(playliste[0])
+  videosVues = fusionnerVideosVues(chargerVideosVues(), playliste)
   print(playliste)
   pos = 0
   while pos < len(playliste):
@@ -190,12 +244,20 @@ def play():
       pos -= 1
     if r[0] == PROCESSTERMINATED:
       pos += 1
+      videosVues[video] = True
+      sauverVideosVues(videosVues)
   etat = VEILLE
 
 def enregistrement():
   print('enregistrement')
   global etat
-  camera.close()
+  r = []
+  while r == []: # relacher le btt vert de la transition
+    r = attente([BTTVERT_OFF])
+  time.sleep(0.2)
+  r = []
+  while r == []: # appuiyer sur btt vert pour enregistrer
+    r = attente([BTTVERT])
   picam, pcmess, fich = enr.pcenr()
   r = []
   while r == []:

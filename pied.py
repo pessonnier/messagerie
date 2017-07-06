@@ -41,7 +41,7 @@ def centrer(location):
   
 import identification as id
 
-def rechercheHorizontale(h, identifieur):
+def rechercheHorizontale(h, identifieur, conditiondArret):
   def mesure():
     posh = i*(HMAX-HMIN)/8+HMIN
     print(posh)
@@ -49,17 +49,20 @@ def rechercheHorizontale(h, identifieur):
     #time.sleep(1)
     return identifieur()
   h0 = 0
-  for t in range(0,3):
+  def aux():
+    l = mesure()
+    if l != []:
+      return l
+    if conditiondArret():
+      return []
+  for t in range(4):
     for i in range(h0,9): # np.arange(1.8, 9.2, 0.4)+0.1: # 0.925
-      l = mesure() 
-      if l != []:
-        return l
+      aux()
     h0 = 1
     for i in range(7,-1,-1):
-      l = mesure() 
-      if l != []:
-        return l
+      aux()
   h.ChangeDutyCycle(HINIT)
+  return []
 
 def test():
   face_lec, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces = id.precapture()
