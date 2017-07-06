@@ -140,10 +140,11 @@ def centrer(loc):
 def autorise():
   print('autorise')
   print('choix PLAY ENR')
-  global etat
+  global etat, processEnFond
   r = []
   while r == []:
     r = attente([BTTROUGE,BTTVERT])
+  # XXX l'action personnalisée n'est pas tuée
   processEnFond.kill()
   camera.close()
   if r[0] == BTTROUGE:
@@ -200,12 +201,15 @@ def enregistrement():
   while r == []:
     r = attente([BTTVERT_OFF])
   enr.pcstop()
-  enr.pcquit(picam)
   print('fichier enregistré : '+fich)
   
   # étape upload
-  idvideo = upload.upload(fich)
-  print('vidéo uploadée id : ' + idvideo)
+  try:
+    idvideo = upload.upload(fich)
+    print('vidéo uploadée id : ' + idvideo)
+  except (ServerNotFoundError):
+    print ('la vidéo n\'est pas envoyée. pas de connexion réseau')
+  enr.pcquit(picam) # arret du processus de capture décalé pour lui laisser le temps de finaliser le fichier
   
   # aprés enregistrment
   r = []

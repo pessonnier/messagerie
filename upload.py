@@ -152,15 +152,19 @@ def resumable_upload(insert_request):
 
 def upload(file, playlist=PLAYLISTID):
   youtube = get_authenticated_service(args)
-  response = initialize_upload(youtube,
-    file=file,
-    title=file.split('/')[-1].split('.')[0],
-    description='',
-    tags=[],
-    diffusion='unlisted',
-    category=22)
-  add_video_to_playlist(youtube,response['id'],playlist)
-  return response['id']
+  try:
+    response = initialize_upload(youtube,
+      file=file,
+      title=file.split('/')[-1].split('.')[0],
+      description='',
+      tags=[],
+      diffusion='unlisted',
+      category=22)
+    add_video_to_playlist(youtube,response['id'],playlist)
+    return response['id']
+  except (FileNotFoundError):
+    print('impossible de trouver ' + file) # log
+    return 0 # exception
 
 if __name__ == '__main__':
   youtube = get_authenticated_service(args)
@@ -173,3 +177,5 @@ if __name__ == '__main__':
     category=22)
   add_video_to_playlist(youtube,response['id'],PLAYLISTID)
 
+# d'après
+# https://stackoverflow.com/questions/21228815/adding-youtube-video-to-playlist-using-python

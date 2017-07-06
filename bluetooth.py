@@ -67,7 +67,7 @@ def connect(id='30:21:95:5C:A8:A8'):
 
 def connectDefault(id='30:21:95:5C:A8:A8', perif='bluez_sink.30_21_95_5C_A8_A8'):
   p = sp.Popen(['echo "connect ' + id + '\nexit\n" | /usr/bin/bluetoothctl'], shell = True)
-  while p.pool() is None:
+  while p.poll() is None:
     time.sleep(0.1)
   cpt = 0
   while (default(perif) == 1) and (cpt < 20):
