@@ -11,6 +11,7 @@ def initCamera():
   print(conf.CAMERA_CAPTURE_Y)
   print(conf.CAMERA_CAPTURE_X)
   camera = picamera.PiCamera()
+  camera.rotation = 90 # XXX faire une variable
   camera.resolution = (conf.CAMERA_CAPTURE_X,conf.CAMERA_CAPTURE_Y)
   camera.start_preview()
   output = np.empty((conf.CAMERA_CAPTURE_Y,conf.CAMERA_CAPTURE_X, 3), dtype=np.uint8)
@@ -63,6 +64,10 @@ def dessineCadre(over, face_locations, carreVert = False):
   #ajout des cadres
   ima = np.zeros((conf.CAMERA_CAPTURE_Y,conf.CAMERA_CAPTURE_X,3), dtype=np.uint8)
   for i,(top, right, bottom, left) in enumerate(face_locations):
+    if right == conf.CAMERA_CAPTURE_X:
+      right = conf.CAMERA_CAPTURE_X -1
+    if bottom == conf.CAMERA_CAPTURE_Y:
+      bottom = conf.CAMERA_CAPTURE_Y -1
     ima[top, left:right, :] = 0xff
     ima[bottom, left:right, :] = 0xff
     ima[top:bottom, left, :] = 0xff

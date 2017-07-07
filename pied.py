@@ -43,11 +43,12 @@ import identification as id
 
 def rechercheHorizontale(h, identifieur, conditiondArret):
   def mesure():
+    identification = identifieur()
     posh = i*(HMAX-HMIN)/8+HMIN
     print(posh)
     h.ChangeDutyCycle(posh)
-    #time.sleep(1)
-    return identifieur()
+    # time.sleep(1) # stabilisation du moteur
+    return identification
   h0 = 0
   def aux():
     l = mesure()

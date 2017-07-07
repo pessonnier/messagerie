@@ -36,7 +36,7 @@ TOUCH_OFF = 104
 PROCESSTERMINATED = 5
 
 # fonctions communes
-def attente(trs, process = None):
+def attente(trs, process = None, blocant = True):
   ev=[]
   while ev == []:
     ev=[]
@@ -58,6 +58,8 @@ def attente(trs, process = None):
       ev.append(MOUVEMENT_OFF)
     if (PROCESSTERMINATED in trs) and (process is not None) and (process.poll() is not None):
       ev.append(PROCESSTERMINATED)
+    if not blocant:
+      break
   return ev
 
 # XXX à charger depuis un fichier de conf
@@ -105,12 +107,12 @@ def fusionnerVideosVues(vues, liste):
 
 # XXX utiliser
 def afficherVideosVues(videosVues):
-  for f, t in videosVues: # XXX a corriger, comment parcourrir un dict
+  for f, t in videosVues.items():
     if t:
       etoile = '*'
     else:
       etoile = '-'
-    print (substr(f, 0, 20).rpad(' ', 20)+etoile)
+    print (f[:20].ljust(20)+etoile)
 
 # les états
 def init():
@@ -164,7 +166,7 @@ def rechercheVisage():
   h, v = pied.init()
   face_lec, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces = id.precapture()
   def arretDetection(): # le btt rouge interromp la recherche et passe en lecture
-    return attente([BTTROUGE]) != []
+    return attente([BTTROUGE], blocant = False) != []
   imatch = pied.rechercheHorizontale(h, face_lec, arretDetection)
   if imatch != []:
     camera.stop_preview()
@@ -203,7 +205,7 @@ def autorise():
 def commandePlayVideo(video):
   return [ 'omxplayer', '-o', 'alsa:pulse', os.path.join(conf.MEDIADIR, video)]
 
-def playlisteParDate()
+def playlisteParDate():
   def pardate (x, y):
     return os.stat(os.path.join(conf.MEDIADIR, x)).st_ctime < os.stat(os.path.join(conf.MEDIADIR, y)).st_ctime
   # la playliste est constituée des fichiers du répertoire MEDIADIR qui ne sont pas des miniatures
