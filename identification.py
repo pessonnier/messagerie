@@ -38,13 +38,16 @@ def initReco():
 def precapture(cadre = True):
   camera, output, ima, over = initCamera()
   visagesCodes = initReco()
-  def face_locations ():
+  def face_capture():
     camera.capture(output, format="rgb")
+    #return output
+  def face_locations ():
     return face_recognition.face_locations(output)
   def face_encodings (loc):
     return face_recognition.face_encodings(output, loc)
   def face_le ():
     loc = face_locations()
+    print (loc)
     if cadre:
       dessineCadre(over, loc)
     return face_recognition.face_encodings(output, loc), loc
@@ -54,11 +57,12 @@ def precapture(cadre = True):
       #agrege tous les fichiers identifies dans matchs
       xmatchs = [ (xmatchs[i][0] | m, loc[locnum]) for i, m in enumerate(face_recognition.compare_faces(visagesCodes, face_encoding)) ]
     imatchs = [ (i, loc) for i, (m, loc) in enumerate(xmatchs) if m]
+    print (imatchs)
     return xmatchs, imatchs # imatch contient des couples identifiant visualisé / position
-  def face_lec ():
+  def face_lec (): # l'identificateur
     face_encodings, loc = face_le ()
     return compare_faces (face_encodings, loc)[1] # ne retourne que le imatch
-  return face_lec, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces
+  return face_lec, face_capture, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces
 
 def dessineCadre(over, face_locations, carreVert = False):
   #ajout des cadres
@@ -88,6 +92,10 @@ def rechercheVisage(camera, output, ima, over, visagesCodes):
     #ajout des cadres
     ima = np.zeros((conf.CAMERA_CAPTURE_Y,conf.CAMERA_CAPTURE_X,3), dtype=np.uint8)
     for i,(top, right, bottom, left) in enumerate(face_locations):
+      if right == conf.CAMERA_CAPTURE_X:
+        right = conf.CAMERA_CAPTURE_X -1
+      if bottom == conf.CAMERA_CAPTURE_Y:
+        bottom = conf.CAMERA_CAPTURE_Y -1
       ima[top, left:right, :] = 0xff
       ima[bottom, left:right, :] = 0xff
       ima[top:bottom, left, :] = 0xff
@@ -117,6 +125,7 @@ def rechercheVisage(camera, output, ima, over, visagesCodes):
 
 def test():
   camera, output, ima, over = initCamera()
+  # initFace()
   visagesCodes = initReco()
   rechercheVisage(camera, output, ima, over, visagesCodes) 
 

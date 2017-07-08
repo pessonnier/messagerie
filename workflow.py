@@ -127,8 +127,9 @@ def init():
 
 def veille():
   print('veille')
-  bt.deconnect()
-  pied.arretmoteur()
+  bt.disconnect()
+  pied.arretmoteur(h,v)
+  camera.close()
   r = []
   while r == []:
     print('lachez ce boutton rouge')
@@ -159,15 +160,17 @@ def ecoute():
 
 camera = None
 processEnFond = None
+h = None
+v = None
 
 def rechercheVisage():
   print('recherche')
-  global etat, camera, processEnFond
+  global etat, camera, processEnFond, h, v
   h, v = pied.init()
-  face_lec, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces = id.precapture()
+  face_lec, captureur, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces = id.precapture()
   def arretDetection(): # le btt rouge interromp la recherche et passe en lecture
     return attente([BTTROUGE], blocant = False) != []
-  imatch = pied.rechercheHorizontale(h, face_lec, arretDetection)
+  imatch = pied.rechercheHorizontale(h, face_lec, captureur, arretDetection)
   if imatch != []:
     camera.stop_preview()
     for identifiant, loc in imatch:

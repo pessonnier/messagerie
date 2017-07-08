@@ -12,7 +12,7 @@ VERTICAL_GPIO=27 # P2 fil blanc vers moteur
 RIEN_GPIO_22 = 0 # P3 fil violet
 
 # calibration
-HINIT = 5.4
+HINIT = 5.5
 HMIN = 1.8
 HMAX = 9.2
 VINIT = 5
@@ -32,7 +32,7 @@ def init():
   v.start(VINIT) # 4.6 à 7
   return h, v
 
-def arretmoteur():
+def arretmoteur(h,v):
   h.stop()
   v.stop()
 
@@ -41,27 +41,29 @@ def centrer(location):
   
 import identification as id
 
-def rechercheHorizontale(h, identifieur, conditiondArret):
+def rechercheHorizontale(h, identifieur, capture, conditiondArret):
   def mesure():
-    identification = identifieur()
+    capture()
     posh = i*(HMAX-HMIN)/8+HMIN
     print(posh)
-    h.ChangeDutyCycle(posh)
+    # h.ChangeDutyCycle(posh)
+    h.ChangeDutyCycle(HINIT) # XXX
+    identification = identifieur()
     # time.sleep(1) # stabilisation du moteur
     return identification
-  h0 = 0
-  def aux():
-    l = mesure()
-    if l != []:
-      return l
-    if conditiondArret():
-      return []
   for t in range(4):
-    for i in range(h0,9): # np.arange(1.8, 9.2, 0.4)+0.1: # 0.925
-      aux()
-    h0 = 1
+    for i in range(0,9): # np.arange(1.8, 9.2, 0.4)+0.1: # 0.925
+      l = mesure()
+      if l != []:
+        return l
+      if conditiondArret():
+        return []
     for i in range(7,-1,-1):
-      aux()
+      l = mesure()
+      if l != []:
+        return l
+      if conditiondArret():
+        return []
   h.ChangeDutyCycle(HINIT)
   return []
 
