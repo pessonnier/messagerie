@@ -2,6 +2,7 @@ import time
 import subprocess as sp
 import RPi.GPIO as GPIO
 import os
+import pickle
 
 import identification as id
 import pied
@@ -63,12 +64,11 @@ def attente(trs, process = None, blocant = True):
   return ev
 
 # XXX à charger depuis un fichier de conf
-# XXX ajouter rien.sh
-actions = {0 : "caid.sh", 1 : "rien.sh", 2 : "caid.sh", 3 : "rien.sh"}
+actions = {0 : "caid.sh", 1 : "rien.sh", 2 : "rien.sh", 3 : "rien.sh", 4 : "caid.sh", 5 : "rien.sh"}
 def lancescript(idt):
   commande = actions[idt]
   print ('commande ' + os.path.join(conf.ACTIONDIR, commande))
-  p=sp.Popen(["/bin/bash", os.path.join(conf.ACTIONDIR, commande)])
+  p=sp.Popen(["/bin/bash", os.path.join(conf.ACTIONDIR, commande)], stdin = sp.PIPE)
   return p
 
 def fichierRecent():
@@ -76,7 +76,7 @@ def fichierRecent():
 
 def memoriserFichier(fich):
   with open(os.path.join(conf.CONFDIR, 'dernierevideo.dmp'), 'wb') as f:
-    pickle.dump(f, fich)
+    pickle.dump(fich, f)
 
 def memoriserFichierRecent():
   fich = fichierRecent()
@@ -97,7 +97,7 @@ def chargerVideosVues():
 
 def sauverVideosVues(videosVues):
   with open(os.path.join(conf.CONFDIR, 'videosVues.dmp'), 'wb') as f:
-    pickle.dump(f, fich)
+    pickle.dump(videosVues, f)
 
 def fusionnerVideosVues(vues, liste):
   for l in liste:
@@ -121,6 +121,9 @@ def init():
   pied.init()
   # Bluetooth
   bt.connectDefault()
+  # sp.('/bin/bash '+ os.path.join(os.getcwd(),'system.sh'), shell = True)
+  sp.call('/bin/bash '+ os.path.join(os.getcwd(),'miseajour.sh'), shell = True)
+  sp.call('/bin/bash '+ os.path.join(os.getcwd(),'telecharger.sh'), shell = True)
   # passage à l'étape suivante
   global etat
   etat=ECOUTE
@@ -128,19 +131,16 @@ def init():
 def veille():
   print('veille')
   bt.disconnect()
-  pied.arretmoteur(h,v)
+  centrerPied()
+  arretMoteur()
   camera.close()
-  r = []
-  while r == []:
+  if attente([BTTROUGE_OFF], bloquant = False):
     print('lachez ce boutton rouge')
-    r = attente([BTTROUGE_OFF])
-  r = []
-  while r == []:
+    attente([BTTROUGE_OFF])
+  if attente([BTTVERT_OFF], bloquant = False):
     print('lachez ce boutton vert')
-    r = attente([BTTVERT_OFF])
-  r = []
-  while r == []:
-    r = attente([BTTVERT, BTTROUGE])
+    attente([BTTVERT_OFF])
+  r = attente([BTTVERT, BTTROUGE])
   global etat
   if r[0] == BTTVERT:
     # XXX indiquer que la detection commencera dans 10s
@@ -152,56 +152,58 @@ def veille():
 # XXX signaler qu'un message est en attente
 def ecoute():
   print('écoute')
-  r = []
-  while r == []:
-    r=attente([MOUVEMENT])
+  attente([MOUVEMENT])
   global etat
   etat = RECHERCHE
 
 camera = None
 processEnFond = None
-h = None
-v = None
+centrerPied = None
+arretMoteur = None
 
 def rechercheVisage():
   print('recherche')
-  global etat, camera, processEnFond, h, v
-  h, v = pied.init()
+  global etat, camera, processEnFond, centrerPied, arretMoteur
+  h, v, arretMoteur, centrerPied = pied.init()
   face_lec, captureur, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces = id.precapture()
   def arretDetection(): # le btt rouge interromp la recherche et passe en lecture
     return attente([BTTROUGE], blocant = False) != []
   imatch = pied.rechercheHorizontale(h, face_lec, captureur, arretDetection)
   if imatch != []:
-    camera.stop_preview()
+    camera.close()
+    centrerPied()
+    arretMoteur()
     for identifiant, loc in imatch:
       processEnFond = lancescript(identifiant)
     etat = CENTRER
     return imatch
   elif arretDetection():
+    camera.close()
+    centrerPied()
+    arretMoteur()
     etat = PLAY
+    attente([BTTROUGE_OFF])
   else:
     etat = VEILLE
   return []
 
 def centrer(loc):
   print('centrer')
-  pied.centrer(loc)
+  pied.viser(loc) # ne fait rien
   global etat
   etat = AUTORISE
 
-# les actions possible une fois identifié
+# les actions possibles une fois identifié
 def autorise():
   print('autorise')
   print('choix PLAY ENR')
   global etat, processEnFond, camera
-  camera.close() # arret de la caméra pour la reconnaissance faciale
-  r = []
-  while r == []:
-    r = attente([BTTROUGE,BTTVERT])
-  # XXX l'action personnalisée n'est pas tuée
-  processEnFond.kill()
+  camera.close() # devrait être innutil
+  r = attente([BTTROUGE,BTTVERT])
+  arreter(processEnFond)
   if r[0] == BTTROUGE:
     etat = PLAY
+    attente([BTTROUGE_OFF])
   if r[0] == BTTVERT:
     etat = ENREGISTREMENT
 
@@ -209,12 +211,24 @@ def commandePlayVideo(video):
   return [ 'omxplayer', '-o', 'alsa:pulse', os.path.join(conf.MEDIADIR, video)]
 
 def playlisteParDate():
-  def pardate (x, y):
-    return os.stat(os.path.join(conf.MEDIADIR, x)).st_ctime < os.stat(os.path.join(conf.MEDIADIR, y)).st_ctime
+  def pardate (x):
+    return - os.stat(os.path.join(conf.MEDIADIR, x)).st_ctime
   # la playliste est constituée des fichiers du répertoire MEDIADIR qui ne sont pas des miniatures
-  return [ f for f in os.listdir(conf.MEDIADIR).sort(pardate) if (not f.endswith('jpg')) and (os.path.isfile(os.path.join(conf.MEDIADIR, f))) ]
+  return [ f for f in sorted(os.listdir(conf.MEDIADIR), key = pardate) if (not f.endswith('jpg')) and (os.path.isfile(os.path.join(conf.MEDIADIR, f))) ]
 
-# XXX memoriser tous les fichiers lu
+def arreter(p):
+  p.stdin.write(b'q')
+  p.stdin.flush()
+  cpt = 0
+  while (p.poll() is None) and (cpt < 10):
+    time.sleep(0.1)
+    cpt += 1
+  if p.poll() is None:
+    print("ERR : le processus ne d'arrete pas")
+    p.terminate()
+    sp.Popen(['killall', 'omxplayer.bin'])
+
+# XXX differentier les fichiers lu
 def play():
   print('play')
   global etat
@@ -223,30 +237,24 @@ def play():
   memoriserFichier(playliste[0])
   videosVues = fusionnerVideosVues(chargerVideosVues(), playliste)
   print(playliste)
+  print(videosVues)
   pos = 0
   while pos < len(playliste):
     video = playliste[pos]
-    p = sp.Popen(commandePlayVideo(video))
-    r = []
-    while r == []:
-      print('lachez ce boutton rouge')
-      r = attente([BTTROUGE_OFF])
-    r = []
-    while r == []:
-      print('lachez ce boutton vert')
-      r = attente([BTTVERT_OFF])
-    r = []
-    while r == []:
-      r = attente([BTTROUGE, BTTVERT, PROCESSTERMINATED], process = p)
+    p = sp.Popen(commandePlayVideo(video), stdin = sp.PIPE)
+    r = attente([BTTROUGE, BTTVERT, PROCESSTERMINATED], process = p)
     if (BTTROUGE in r) and (BTTVERT in r):
+      arreter(p)
       etat = VEILLE
       return
     if r[0] == BTTVERT: # video suivante
-      p.kill()
+      arreter(p)
       pos += 1
     if r[0] == BTTROUGE: # video précédente
-      p.kill()
+      arreter(p)
       pos -= 1
+      if pos < 0:
+        pos = 0
     if r[0] == PROCESSTERMINATED:
       pos += 1
       videosVues[video] = True
@@ -256,17 +264,13 @@ def play():
 def enregistrement():
   print('enregistrement')
   global etat
-  r = []
-  while r == []: # relacher le btt vert de la transition
-    r = attente([BTTVERT_OFF])
+  # relacher le btt vert de la transition
+  attente([BTTVERT_OFF])
   time.sleep(0.2)
-  r = []
-  while r == []: # appuiyer sur btt vert pour enregistrer
-    r = attente([BTTVERT])
+  # appuiyer sur btt vert pour enregistrer
+  attente([BTTVERT])
   picam, pcmess, fich = enr.pcenr()
-  r = []
-  while r == []:
-    r = attente([BTTVERT_OFF])
+  attente([BTTVERT_OFF])
   enr.pcstop()
   print('fichier enregistré : '+fich)
   
@@ -279,9 +283,7 @@ def enregistrement():
   enr.pcquit(picam) # arret du processus de capture décalé pour lui laisser le temps de finaliser le fichier
   
   # aprés enregistrment
-  r = []
-  while r == []:
-    r = attente([BTTROUGE,BTTVERT])
+  r = attente([BTTROUGE,BTTVERT])
   if r[0] == BTTROUGE:
     etat = VEILLE
   if r[0] == BTTVERT:

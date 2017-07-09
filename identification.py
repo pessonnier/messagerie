@@ -22,7 +22,7 @@ def initCamera():
 def initFace():
   # encode les visages et les sérialises
   print('encodage')
-  visages = [ face_recognition.load_image_file(os.path.join(conf.PHOTOSDIR,f)) for f in os.listdir(conf.PHOTOSDIR) if f.endswith('jpg')]
+  visages = [ face_recognition.load_image_file(os.path.join(conf.PHOTOSDIR,f)) for f in sorted(os.listdir(conf.PHOTOSDIR)) if f.endswith('jpg')]
   visagesCodes = [ face_recognition.face_encodings(v)[0] for v in visages ]
   visagesCodesDump = open(os.path.join(conf.PHOTOSDIR,'visagesCodes.fre'), 'wb')
   pickle.dump(visagesCodes, visagesCodesDump)
@@ -125,7 +125,7 @@ def rechercheVisage(camera, output, ima, over, visagesCodes):
 
 def test():
   camera, output, ima, over = initCamera()
-  # initFace()
+  initFace()
   visagesCodes = initReco()
   rechercheVisage(camera, output, ima, over, visagesCodes) 
 

@@ -30,13 +30,16 @@ def init():
   v = GPIO.PWM(VERTICAL_GPIO, 50)
   h.start(HINIT) # 1.8 à 9.2
   v.start(VINIT) # 4.6 à 7
-  return h, v
+  def arretmoteur():
+    h.stop()
+    v.stop()
+  def centrer():
+    h.start(HINIT)
+    v.start(VINIT)
+  return h, v, arretmoteur, centrer
 
-def arretmoteur(h,v):
-  h.stop()
-  v.stop()
-
-def centrer(location):
+# XXX a faire et a remonter dans init
+def viser(location):
   pass
   
 import identification as id
