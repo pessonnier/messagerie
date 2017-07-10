@@ -136,6 +136,7 @@ def veille():
   bt.disconnect()
   centrerPied()
   arretMoteur()
+  global camera
   camera.close()
   # telechargement de la playliste
   t = threading.Thread(target = telecharger.telecharger)
@@ -202,9 +203,9 @@ def autorise():
   print('autorise')
   print('choix PLAY ENR')
   global etat, processEnFond, camera
-  camera.close() # devrait être innutil
   r = attente([BTTROUGE,BTTVERT])
   if r[0] == BTTROUGE:
+    arreter(processEnFond, force = True)
     etat = PLAY
     attente([BTTROUGE_OFF])
   if r[0] == BTTVERT:
@@ -277,14 +278,17 @@ def play():
 def enregistrement():
   print('enregistrement')
   global etat, processEnFond
+  # visualise la camera pour le cadrage
+  camera = enr.pcinit()
   # XXX indiquer que l'on peut enregistrer btt vert
   # relacher le btt vert de la transition
   if attente([BTTVERT], bloquant = False) != []:
     print('lachez le boutton vert puis rapuyez pour enregistrer')
   attente([BTTVERT_OFF])
-  time.sleep(0.2)
+  time.sleep(0.1)
   # appuiyer sur btt vert pour enregistrer
   attente([BTTVERT])
+  camera.close()
   picam, pcmess, fich = enr.pcenr()
   attente([BTTVERT_OFF])
   enr.pcstop()

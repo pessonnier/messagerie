@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import time
+import conf
 
 # les GPIO
 BTTROUGE_GPIO=23 # P4 resistance fil bleu
@@ -36,6 +37,7 @@ def init():
   def centrer():
     h.start(HINIT)
     v.start(VINIT)
+    time.sleep(0.1)
   return h, v, arretmoteur, centrer
 
 # XXX a faire et a remonter dans init
@@ -49,8 +51,10 @@ def rechercheHorizontale(h, identifieur, capture, conditiondArret):
     capture()
     posh = i*(HMAX-HMIN)/8+HMIN
     print(posh)
-    # h.ChangeDutyCycle(posh)
-    h.ChangeDutyCycle(HINIT) # XXX
+    if conf.ROTATION:
+      h.ChangeDutyCycle(posh)
+    else:
+      h.ChangeDutyCycle(HINIT)
     identification = identifieur()
     # time.sleep(1) # stabilisation du moteur
     return identification
