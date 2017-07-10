@@ -292,6 +292,7 @@ def enregistrement():
   picam, pcmess, fich = enr.pcenr()
   attente([BTTVERT_OFF])
   enr.pcstop()
+  time.sleep(0.5)
   enr.pcquit(picam)
   print('fichier enregistré : '+fich)
   if fich == '':
