@@ -168,11 +168,12 @@ def upload(file, playlist=PLAYLISTID):
 
 if __name__ == '__main__':
   youtube = get_authenticated_service(args)
+  # XXX uploader la dernière video
   response = initialize_upload(youtube,
     file='/home/pi/prog/messagerie/rec/archive/2017-06-08_00-03-27.ts',
     title='t4',
     description='description',
-    tags=['k1','k2'],
+    tags=['manuel'],
     diffusion='unlisted',
     category=22)
   add_video_to_playlist(youtube,response['id'],PLAYLISTID)

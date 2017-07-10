@@ -3,6 +3,7 @@ import subprocess as sp
 import RPi.GPIO as GPIO
 import os
 import pickle
+import threading
 
 import identification as id
 import pied
@@ -10,6 +11,7 @@ import upload
 import bluetooth as bt
 import enregistrement as enr
 import conf
+import telecharger
 
 # les états
 INIT = 1
@@ -37,7 +39,7 @@ TOUCH_OFF = 104
 PROCESSTERMINATED = 5
 
 # fonctions communes
-def attente(trs, process = None, blocant = True):
+def attente(trs, process = None, bloquant = True):
   ev=[]
   while ev == []:
     ev=[]
@@ -59,7 +61,7 @@ def attente(trs, process = None, blocant = True):
       ev.append(MOUVEMENT_OFF)
     if (PROCESSTERMINATED in trs) and (process is not None) and (process.poll() is not None):
       ev.append(PROCESSTERMINATED)
-    if not blocant:
+    if not bloquant:
       break
   return ev
 
@@ -121,9 +123,10 @@ def init():
   pied.init()
   # Bluetooth
   bt.connectDefault()
-  # sp.('/bin/bash '+ os.path.join(os.getcwd(),'system.sh'), shell = True)
-  sp.call('/bin/bash '+ os.path.join(os.getcwd(),'miseajour.sh'), shell = True)
-  sp.call('/bin/bash '+ os.path.join(os.getcwd(),'telecharger.sh'), shell = True)
+  # operations sur le system
+  sp.call('/bin/bash '+ os.path.join(os.getcwd(),'system.sh'), shell = True)
+  # mise a jour du projet git
+  sp.Popen(['/bin/bash', os.path.join(os.getcwd(),'miseajour.sh')])
   # passage à l'étape suivante
   global etat
   etat=ECOUTE
@@ -134,17 +137,18 @@ def veille():
   centrerPied()
   arretMoteur()
   camera.close()
-  if attente([BTTROUGE_OFF], bloquant = False):
+  # telechargement de la playliste
+  t = threading.Thread(target = telecharger.telecharger)
+  t.start()
+  if attente([BTTROUGE_OFF], bloquant = False) == []:
     print('lachez ce boutton rouge')
     attente([BTTROUGE_OFF])
-  if attente([BTTVERT_OFF], bloquant = False):
+  if attente([BTTVERT_OFF], bloquant = False) == []:
     print('lachez ce boutton vert')
     attente([BTTVERT_OFF])
   r = attente([BTTVERT, BTTROUGE])
   global etat
   if r[0] == BTTVERT:
-    # XXX indiquer que la detection commencera dans 10s
-    time.sleep(10)
     etat = INIT
   if r[0] == BTTROUGE:
     etat = ETEINDRE
@@ -167,7 +171,7 @@ def rechercheVisage():
   h, v, arretMoteur, centrerPied = pied.init()
   face_lec, captureur, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces = id.precapture()
   def arretDetection(): # le btt rouge interromp la recherche et passe en lecture
-    return attente([BTTROUGE], blocant = False) != []
+    return attente([BTTROUGE], bloquant = False) != []
   imatch = pied.rechercheHorizontale(h, face_lec, captureur, arretDetection)
   if imatch != []:
     camera.close()
@@ -200,11 +204,11 @@ def autorise():
   global etat, processEnFond, camera
   camera.close() # devrait être innutil
   r = attente([BTTROUGE,BTTVERT])
-  arreter(processEnFond)
   if r[0] == BTTROUGE:
     etat = PLAY
     attente([BTTROUGE_OFF])
   if r[0] == BTTVERT:
+    arreter(processEnFond, force = True)
     etat = ENREGISTREMENT
 
 def commandePlayVideo(video):
@@ -216,17 +220,26 @@ def playlisteParDate():
   # la playliste est constituée des fichiers du répertoire MEDIADIR qui ne sont pas des miniatures
   return [ f for f in sorted(os.listdir(conf.MEDIADIR), key = pardate) if (not f.endswith('jpg')) and (os.path.isfile(os.path.join(conf.MEDIADIR, f))) ]
 
-def arreter(p):
-  p.stdin.write(b'q')
-  p.stdin.flush()
+def arreter(p, force = False):
+  if p is None:
+    print('rien a arreter')
+    return
+  try:
+    p.stdin.write(b'q')
+    p.stdin.flush()
+  except :
+    print('echec de l envoi de message')
   cpt = 0
   while (p.poll() is None) and (cpt < 10):
     time.sleep(0.1)
     cpt += 1
   if p.poll() is None:
-    print("ERR : le processus ne d'arrete pas")
+    print("ERR : omxplayer ne d'arrete pas")
     p.terminate()
     sp.Popen(['killall', 'omxplayer.bin'])
+  if force:
+    sp.Popen(['killall', 'omxplayer.bin'])
+    # XXX ajouter un killtree
 
 # XXX differentier les fichiers lu
 def play():
@@ -263,8 +276,11 @@ def play():
 
 def enregistrement():
   print('enregistrement')
-  global etat
+  global etat, processEnFond
+  # XXX indiquer que l'on peut enregistrer btt vert
   # relacher le btt vert de la transition
+  if attente([BTTVERT], bloquant = False) != []:
+    print('lachez le boutton vert puis rapuyez pour enregistrer')
   attente([BTTVERT_OFF])
   time.sleep(0.2)
   # appuiyer sur btt vert pour enregistrer
@@ -272,12 +288,17 @@ def enregistrement():
   picam, pcmess, fich = enr.pcenr()
   attente([BTTVERT_OFF])
   enr.pcstop()
+  enr.pcquit(picam)
   print('fichier enregistré : '+fich)
+  if fich == '':
+    print('echec on recommence')
+    return
   
   # étape upload
+  # XXX indiquer upload
   try:
     idvideo = upload.upload(fich)
-    print('vidéo uploadée id : ' + idvideo)
+    print('vidéo uploadée id : ' + str(idvideo))
   except (ServerNotFoundError):
     print ('la vidéo n\'est pas envoyée. pas de connexion réseau')
   enr.pcquit(picam) # arret du processus de capture décalé pour lui laisser le temps de finaliser le fichier

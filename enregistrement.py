@@ -30,7 +30,7 @@ def pcinit():
   return camera
 
 def pcexe():
-  picam=sp.Popen([PICAMDIR+'/picam', '-p', '--autoex', '--alsadev', 'hw:1,0', '--statedir', PICAMSTATE, '--hooksdir', PICAMHOOKS], stdout=sp.PIPE)
+  picam=sp.Popen([PICAMDIR+'/picam', '-p', '--autoex', '--rotation', '90', '--alsadev', 'hw:1,0', '--statedir', PICAMSTATE, '--hooksdir', PICAMHOOKS], stdout=sp.PIPE)
   return picam
 
 def pcstop():
@@ -85,3 +85,6 @@ def test():
   pcstop()
   pcquit(picam)
   print('fichier enregistré : '+fich)
+
+if __name__ == '__main__':
+  test()

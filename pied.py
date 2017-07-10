@@ -41,7 +41,7 @@ def init():
 # XXX a faire et a remonter dans init
 def viser(location):
   pass
-  
+
 import identification as id
 
 def rechercheHorizontale(h, identifieur, capture, conditiondArret):
@@ -79,11 +79,18 @@ def test():
 
 
 def test2():
-  h, v = init()
+  h, v, x, y = init()
   face_lec, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces = id.precapture()
   print('boucle reco')
   for i in range(10):
     print(rechercheHorizontale(h,face_lec))
 
+def test3():
+  h, v, x, y = init()
+  while True:
+    mouvement = GPIO.input(MOUVEMENT_GPIO)
+    print('mvt : %d' % mouvement)
+    time.sleep(1)
+
 if __name__ == "__main__":
-  test2()
+  test3()
