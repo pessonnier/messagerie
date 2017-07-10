@@ -31,7 +31,7 @@ def pcinit():
 
 def pcexe():
   # picam=sp.Popen([PICAMDIR+'/picam', '-p', '--autoex', '--rotation', '90', '--alsadev', 'hw:1,0', '--statedir', PICAMSTATE, '--hooksdir', PICAMHOOKS], stdout=sp.PIPE)
-  picam=sp.Popen([PICAMDIR+'/picam', '-p', '--statedir', PICAMSTATE, '--hooksdir', PICAMHOOKS], stdout=sp.PIPE)
+  picam=sp.Popen([PICAMDIR+'/picam', '-p', '-w', '300', '-h', '300', '--statedir', PICAMSTATE, '--hooksdir', PICAMHOOKS], stdout=sp.PIPE)
   return picam
 
 def pcstop():
@@ -88,4 +88,6 @@ def test():
   print('fichier enregistré : '+fich)
 
 if __name__ == '__main__':
+  test()
+  time.sleep(1)
   test()

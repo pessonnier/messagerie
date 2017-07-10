@@ -140,6 +140,7 @@ def veille():
   camera.close()
   # telechargement de la playliste
   t = threading.Thread(target = telecharger.telecharger)
+  t.daemon = True
   t.start()
   if attente([BTTROUGE_OFF], bloquant = False) == []:
     print('lachez ce boutton rouge')
@@ -147,6 +148,7 @@ def veille():
   if attente([BTTVERT_OFF], bloquant = False) == []:
     print('lachez ce boutton vert')
     attente([BTTVERT_OFF])
+  # XXX ajouter un timeout
   r = attente([BTTVERT, BTTROUGE])
   global etat
   if r[0] == BTTVERT:
@@ -160,6 +162,7 @@ def ecoute():
   attente([MOUVEMENT])
   global etat
   etat = RECHERCHE
+  # etat = ENREGISTREMENT # XXX
 
 camera = None
 processEnFond = None
@@ -277,23 +280,43 @@ def play():
 
 def enregistrement():
   print('enregistrement')
-  global etat, processEnFond
-  # visualise la camera pour le cadrage
-  camera = enr.pcinit()
-  # XXX indiquer que l'on peut enregistrer btt vert
+  global etat
   # relacher le btt vert de la transition
   if attente([BTTVERT], bloquant = False) != []:
     print('lachez le boutton vert puis rapuyez pour enregistrer')
   attente([BTTVERT_OFF])
-  time.sleep(0.1)
-  # appuiyer sur btt vert pour enregistrer
-  attente([BTTVERT])
-  camera.close()
-  picam, pcmess, fich = enr.pcenr()
-  attente([BTTVERT_OFF])
+  #
+  # enregistrement
+  #
+  # visualise la camera pour le cadrage
+  picam=sp.Popen([conf.PICAMDIR+'/picam', '-p', '--autoex', '--rotation', '90', '--alsadev', 'hw:1,0', '--statedir', conf.PICAMSTATE, '--hooksdir', conf.PICAMHOOKS], stdout=sp.PIPE)
+  r = attente([BTTVERT, BTTROUGE])
+  if r == [BTTROUGE]:
+    etat = VEILLE
+    enr.pcquit(picam)
+    return
+
+  fich=''
+  while attente([BTTVERT_OFF], bloquant = False) == []:
+    sp.call(['touch', conf.PICAMHOOKS+'/start_record'])
+    time.sleep(0.2)
+
   enr.pcstop()
-  time.sleep(0.5)
-  enr.pcquit(picam)
+  # enr.pcquit(picam)
+  try:
+    while True:
+      l = picam.stdout.readline().decode()
+      if not l.startswith('x'):
+        print(l)
+      if l.startswith('disk'):
+        fich = ' '.join(l.split(' ')[4:]).strip()
+        break
+      if l == '':
+        break
+  except:
+    print('fin de fichier')
+  if fich == '':
+    print('échec de l\'enregistrement') # log
   print('fichier enregistré : '+fich)
   if fich == '':
     print('echec on recommence')

@@ -35,9 +35,9 @@ def init():
     h.stop()
     v.stop()
   def centrer():
-    h.start(HINIT)
-    v.start(VINIT)
-    time.sleep(0.1)
+    h.ChangeDutyCycle(HINIT)
+    v.ChangeDutyCycle(VINIT)
+    time.sleep(0.2)
   return h, v, arretmoteur, centrer
 
 # XXX a faire et a remonter dans init
