@@ -5,6 +5,8 @@ import os
 import pickle
 import threading
 
+# XXX image d'acceuil
+
 import identification as id
 import pied
 import upload
@@ -116,11 +118,17 @@ def afficherVideosVues(videosVues):
       etoile = '-'
     print (f[:20].ljust(20)+etoile)
 
+h = None
+v = None
+centrerPied = None
+arretMoteur = None
+
 # les états
 def init():
   print('init')
   # les périfériques
-  pied.init()
+  global h, v, centrerPied, arretMoteur
+  h, v, arretMoteur, centrerPied = pied.init()
   # Bluetooth
   bt.connectDefault()
   # operations sur le system
@@ -133,7 +141,8 @@ def init():
 
 def veille():
   print('veille')
-  bt.disconnect()
+  # bt.disconnect()
+  global centrerPied, arretMoteur
   centrerPied()
   arretMoteur()
   global camera
@@ -166,13 +175,11 @@ def ecoute():
 
 camera = None
 processEnFond = None
-centrerPied = None
-arretMoteur = None
 
 def rechercheVisage():
   print('recherche')
-  global etat, camera, processEnFond, centrerPied, arretMoteur
-  h, v, arretMoteur, centrerPied = pied.init()
+  global etat, camera, processEnFond, h, v, centrerPied, arretMoteur
+  # h, v, arretMoteur, centrerPied = pied.init()
   face_lec, captureur, camera, output, ima, over, visagesCodes, face_locations, face_encodings, compare_faces = id.precapture()
   def arretDetection(): # le btt rouge interromp la recherche et passe en lecture
     return attente([BTTROUGE], bloquant = False) != []
@@ -181,6 +188,7 @@ def rechercheVisage():
     camera.close()
     centrerPied()
     arretMoteur()
+    bt.connectDefault()
     for identifiant, loc in imatch:
       processEnFond = lancescript(identifiant)
     etat = CENTRER
@@ -249,7 +257,7 @@ def arreter(p, force = False):
 def play():
   print('play')
   global etat
-  # bt.connectDefault()
+  bt.connectDefault()
   playliste = playlisteParDate()
   memoriserFichier(playliste[0])
   videosVues = fusionnerVideosVues(chargerVideosVues(), playliste)
@@ -290,6 +298,9 @@ def enregistrement():
   #
   # visualise la camera pour le cadrage
   picam=sp.Popen([conf.PICAMDIR+'/picam', '-p', '--autoex', '--rotation', '90', '--alsadev', 'hw:1,0', '--statedir', conf.PICAMSTATE, '--hooksdir', conf.PICAMHOOKS], stdout=sp.PIPE)
+  # sp.call('/bin/bash -c echo "text=Veille     Enregistrer" > ' + os.path.join(conf.PICAMHOOKS, 'subtitle'))
+  with open(os.path.join(conf.PICAMHOOKS, 'subtitle'), 'w') as f:
+    f.write('text=Veille     Enregistrer')
   r = attente([BTTVERT, BTTROUGE])
   if r == [BTTROUGE]:
     etat = VEILLE
