@@ -3,10 +3,12 @@ import os
 PICAMDIR = os.environ["PICAMDIR"]
 PICAMSTATE = os.path.join(PICAMDIR, 'state')
 PICAMHOOKS = os.path.join(PICAMDIR, 'hooks')
+MESSAGERIEDIR = os.environ["MESSAGERIEDIR"]
 
 MEDIADIR = os.environ["MESSAGERIEMEDIADIR"]
 PHOTOSDIR = os.path.join(MEDIADIR, 'photo')
 ACTIONDIR = os.path.join(MEDIADIR, 'actions')
+SLIDESHOWDIR = os.path.join(MEDIADIR, 'slideshow')
 
 PLAYLISTID = os.environ["PLAYLISTID"]
 CONFDIR = os.environ["MESSAGERIECONFDIR"]

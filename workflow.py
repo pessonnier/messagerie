@@ -142,15 +142,23 @@ def init():
 def veille():
   print('veille')
   # bt.disconnect()
-  global centrerPied, arretMoteur
-  centrerPied()
-  arretMoteur()
+  # global centrerPied, arretMoteur
+  # centrerPied()
+  # arretMoteur()
   global camera
   camera.close()
+  # slide show
+  def slide():
+    sp.call('sudo fbi -T 1 -a ' + os.path.join(conf.MESSAGERIEDIR, 'doc', 'veille.jpg'), shell = True)
+    time.sleep(10)
+    sp.call('sudo fbi -noverbose -a -t 5 -T 1 -d /dev/fb0 ' + conf.SLIDESHOWDIR + '/*.jpg', shell = True)
+  tslide = threading.Thread(target = slide)
+  tslide.daemon = True
+  tslide.start()
   # telechargement de la playliste
-  t = threading.Thread(target = telecharger.telecharger)
-  t.daemon = True
-  t.start()
+  ttel = threading.Thread(target = telecharger.telecharger)
+  ttel.daemon = True
+  ttel.start()
   if attente([BTTROUGE_OFF], bloquant = False) == []:
     print('lachez ce boutton rouge')
     attente([BTTROUGE_OFF])
@@ -160,6 +168,7 @@ def veille():
   # XXX ajouter un timeout
   r = attente([BTTVERT, BTTROUGE])
   global etat
+  sp.call('sudo killall fbi', shell = True)
   if r[0] == BTTVERT:
     etat = INIT
   if r[0] == BTTROUGE:
@@ -171,7 +180,6 @@ def ecoute():
   attente([MOUVEMENT])
   global etat
   etat = RECHERCHE
-  # etat = ENREGISTREMENT # XXX
 
 camera = None
 processEnFond = None
@@ -214,6 +222,7 @@ def autorise():
   print('autorise')
   print('choix PLAY ENR')
   global etat, processEnFond, camera
+  sp.call('sudo fbi -T 1 -a ' + os.path.join(conf.MESSAGERIEDIR, 'doc', 'identifie.jpg'), shell = True)
   r = attente([BTTROUGE,BTTVERT])
   if r[0] == BTTROUGE:
     arreter(processEnFond, force = True)
