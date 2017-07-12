@@ -4,6 +4,7 @@ PICAMDIR = os.environ["PICAMDIR"]
 PICAMSTATE = os.path.join(PICAMDIR, 'state')
 PICAMHOOKS = os.path.join(PICAMDIR, 'hooks')
 MESSAGERIEDIR = os.environ["MESSAGERIEDIR"]
+ACCUEIL = os.environ["ACCUEIL"]
 
 MEDIADIR = os.environ["MESSAGERIEMEDIADIR"]
 PHOTOSDIR = os.path.join(MEDIADIR, 'photo')

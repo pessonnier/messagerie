@@ -38,7 +38,10 @@ def init():
     h.ChangeDutyCycle(HINIT)
     v.ChangeDutyCycle(VINIT)
     time.sleep(0.2)
-  return h, v, arretmoteur, centrer
+  def relancerMoteur():
+    h.start(HINIT)
+    v.start(VINIT)
+  return h, v, arretmoteur, centrer, relancerMoteur
 
 # XXX a faire et a remonter dans init
 def viser(location):

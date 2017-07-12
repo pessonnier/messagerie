@@ -6,6 +6,7 @@ import pickle
 import threading
 
 # XXX image d'acceuil
+sp.call('sudo fbi -noverbose -a -T 1 -d /dev/fb0 ' + conf.ACCUEIL, shell = True)
 
 import identification as id
 import pied
@@ -122,19 +123,29 @@ h = None
 v = None
 centrerPied = None
 arretMoteur = None
+relancerMoteur = None
 
 # les états
 def init():
   print('init')
   # les périfériques
-  global h, v, centrerPied, arretMoteur
-  h, v, arretMoteur, centrerPied = pied.init()
+  global h, v, centrerPied, arretMoteur, relancerMoteur
+  if h is None:
+    h, v, arretMoteur, centrerPied, relancerMoteur = pied.init()
+  else:
+    pass
+    # GPIO.cleanup()
+    # h, v, arretMoteur, centrerPied, relancerMoteur = pied.init()
+    # relancerMoteur()
   # Bluetooth
   bt.connectDefault()
   # operations sur le system
   sp.call('/bin/bash '+ os.path.join(os.getcwd(),'system.sh'), shell = True)
   # mise a jour du projet git
   sp.Popen(['/bin/bash', os.path.join(os.getcwd(),'miseajour.sh')])
+  # suppression des processus indésirable
+  sp.call('sudo killall fbi', shell = True)
+  sp.call('sudo killall omxplayer.bin', shell = True)
   # passage à l'étape suivante
   global etat
   etat=ECOUTE
@@ -149,7 +160,7 @@ def veille():
   camera.close()
   # slide show
   def slide():
-    sp.call('sudo fbi -T 1 -a ' + os.path.join(conf.MESSAGERIEDIR, 'doc', 'veille.jpg'), shell = True)
+    sp.call('sudo fbi -noverbose -T 1 -a ' + os.path.join(conf.MESSAGERIEDIR, 'doc', 'veille.jpg'), shell = True)
     time.sleep(10)
     sp.call('sudo fbi -noverbose -a -t 5 -T 1 -d /dev/fb0 ' + conf.SLIDESHOWDIR + '/*.jpg', shell = True)
   tslide = threading.Thread(target = slide)
@@ -168,7 +179,9 @@ def veille():
   # XXX ajouter un timeout
   r = attente([BTTVERT, BTTROUGE])
   global etat
+  print('killall fbi')
   sp.call('sudo killall fbi', shell = True)
+  sp.call('sudo fbi -noverbose -T 1 -a ' + os.path.join(conf.MESSAGERIEDIR, 'doc', 'vide.jpg'), shell = True)
   if r[0] == BTTVERT:
     etat = INIT
   if r[0] == BTTROUGE:
@@ -197,8 +210,9 @@ def rechercheVisage():
     centrerPied()
     arretMoteur()
     bt.connectDefault()
-    for identifiant, loc in imatch:
-      processEnFond = lancescript(identifiant)
+    # for identifiant, loc in imatch:
+    #  processEnFond = lancescript(identifiant)
+    processEnFond = lancescript(imatch[0][0])
     etat = CENTRER
     return imatch
   elif arretDetection():
@@ -206,6 +220,7 @@ def rechercheVisage():
     centrerPied()
     arretMoteur()
     etat = PLAY
+    sp.call('sudo fbi -noverbose -T 1 -a ' + os.path.join(conf.MESSAGERIEDIR, 'doc', 'lecture.jpg'), shell = True)
     attente([BTTROUGE_OFF])
   else:
     etat = VEILLE
@@ -222,14 +237,32 @@ def autorise():
   print('autorise')
   print('choix PLAY ENR')
   global etat, processEnFond, camera
-  sp.call('sudo fbi -T 1 -a ' + os.path.join(conf.MESSAGERIEDIR, 'doc', 'identifie.jpg'), shell = True)
+  sp.call('sudo fbi -noverbose -T 1 -a ' + os.path.join(conf.MESSAGERIEDIR, 'doc', 'identifie.jpg'), shell = True)
+  r = attente([BTTROUGE, BTTVERT, PROCESSTERMINATED], process = processEnFond)
+  print('att 1') # XXX
+  if r[0] == BTTROUGE:
+    print('arret par btt rouge') # XXX
+    arreter(processEnFond, force = True)
+    time.sleep(0.1)
+    attente([BTTROUGE_OFF])
+  elif r[0] == BTTVERT:
+    print('arret par btt vert') # XXX
+    arreter(processEnFond, force = True)
+    time.sleep(0.1)
+    attente([BTTVERT_OFF])
+  elif r[0] == PROCESSTERMINATED:
+    print('process termine') # XXX
   r = attente([BTTROUGE,BTTVERT])
   if r[0] == BTTROUGE:
-    arreter(processEnFond, force = True)
+    print('btt rouge') # XXX
+    # arreter(processEnFond, force = True)
     etat = PLAY
+    sp.call('sudo fbi -noverbose -T 1 -a ' + os.path.join(conf.MESSAGERIEDIR, 'doc', 'lecture.jpg'), shell = True)
+    time.sleep(0.1)
     attente([BTTROUGE_OFF])
   if r[0] == BTTVERT:
-    arreter(processEnFond, force = True)
+    print('btt vert') # XXX
+    # arreter(processEnFond, force = True)
     etat = ENREGISTREMENT
 
 def commandePlayVideo(video):
@@ -284,11 +317,13 @@ def play():
     if r[0] == BTTVERT: # video suivante
       arreter(p)
       pos += 1
+      attente([BTTVERT_OFF])
     if r[0] == BTTROUGE: # video précédente
       arreter(p)
       pos -= 1
       if pos < 0:
         pos = 0
+      attente([BTTROUGE_OFF])
     if r[0] == PROCESSTERMINATED:
       pos += 1
       videosVues[video] = True
