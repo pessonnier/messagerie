@@ -1,19 +1,18 @@
-import time
+import conf
 import subprocess as sp
+sp.call('sudo fbi -noverbose -a -T 1 -d /dev/fb0 ' + conf.ACCUEIL, shell = True)
+
+import time
 import RPi.GPIO as GPIO
 import os
 import pickle
 import threading
-
-# XXX image d'acceuil
-sp.call('sudo fbi -noverbose -a -T 1 -d /dev/fb0 ' + conf.ACCUEIL, shell = True)
 
 import identification as id
 import pied
 import upload
 import bluetooth as bt
 import enregistrement as enr
-import conf
 import telecharger
 
 # les états
@@ -162,7 +161,11 @@ def veille():
   def slide():
     sp.call('sudo fbi -noverbose -T 1 -a ' + os.path.join(conf.MESSAGERIEDIR, 'doc', 'veille.jpg'), shell = True)
     time.sleep(10)
-    sp.call('sudo fbi -noverbose -a -t 5 -T 1 -d /dev/fb0 ' + conf.SLIDESHOWDIR + '/*.jpg', shell = True)
+    # sp.call('sudo fbi -noverbose -a -t 5 -T 1 -d /dev/fb0 ' + conf.SLIDESHOWDIR + '/*.jpg', shell = True)
+    jpgs = [ os.path.join(conf.SLIDESHOWDIR, f) for f in sorted(os.listdir(conf.SLIDESHOWDIR)) if f.endswith('jpg')]
+    fbicmd = ['sudo', 'fbi', '-noverbose', '-a', '-t', '5', '-T', '1', '-d', '/dev/fb0']
+    fbicmd.extend(jpgs)
+    sp.Popen(fbicmd)
   tslide = threading.Thread(target = slide)
   tslide.daemon = True
   tslide.start()
@@ -181,6 +184,7 @@ def veille():
   global etat
   print('killall fbi')
   sp.call('sudo killall fbi', shell = True)
+  time.sleep(0.5)
   sp.call('sudo fbi -noverbose -T 1 -a ' + os.path.join(conf.MESSAGERIEDIR, 'doc', 'vide.jpg'), shell = True)
   if r[0] == BTTVERT:
     etat = INIT
