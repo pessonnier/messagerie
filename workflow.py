@@ -344,9 +344,14 @@ def enregistrement():
   #
   # enregistrement
   #
+  # def blink():
+  #  sp.call('touch ' + os.path.join(conf.PICAMHOOKS,'ex_night'), shell = True)
+  #  time.sleep(1)
+  #  sp.call('touch ' + os.path.join(conf.PICAMHOOKS,'ex_auto'), shell = True)
   # visualise la camera pour le cadrage
   picam=sp.Popen([conf.PICAMDIR+'/picam', '-p', '--autoex', '--rotation', '90', '--alsadev', 'hw:1,0', '--statedir', conf.PICAMSTATE, '--hooksdir', conf.PICAMHOOKS], stdout=sp.PIPE)
   # sp.call('/bin/bash -c echo "text=Veille     Enregistrer" > ' + os.path.join(conf.PICAMHOOKS, 'subtitle'))
+  #sp.call('touch ' + os.path.join(conf.PICAMHOOKS,'ex_auto'), shell = True)
   with open(os.path.join(conf.PICAMHOOKS, 'subtitle'), 'w') as f:
     f.write('text=Veille     Enregistrer')
   r = attente([BTTVERT, BTTROUGE])
@@ -361,6 +366,10 @@ def enregistrement():
     time.sleep(0.2)
 
   enr.pcstop()
+  # signaler l'arret de l'enregistrement
+  # tblink = threading.Thread(target = blink)
+  # tblink.daemon = True
+  # tblink.start()
   # enr.pcquit(picam)
   try:
     while True:

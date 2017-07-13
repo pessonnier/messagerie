@@ -78,7 +78,7 @@ def disconnect(id='30:21:95:5C:A8:A8'):
   sp.call('echo "disconnect ' + id + '\nexit\n" | /usr/bin/bluetoothctl', shell = True)
 
 def default(id='bluez_sink.30_21_95_5C_A8_A8'):
-  sp.call('pacmd set-default-sink '+id, shell = True)
+  return sp.call('pacmd set-default-sink '+id, shell = True)
 
 if __name__ == '__main__':
   connectDefault()
